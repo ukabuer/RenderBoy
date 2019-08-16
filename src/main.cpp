@@ -20,6 +20,7 @@ int main(int argc, const char **argv) {
   scene.add(cube);
   PerspectiveCamera camera(45, width, height, 0, 1000);
   camera.setPosition(1.0f, 1.0f, 3.0f);
+  float radian = 0.0f;
 
   // display
   sf::RenderWindow window(sf::VideoMode(width, height), "Rasterizer");
@@ -44,6 +45,9 @@ int main(int argc, const char **argv) {
     auto delta = chrono::duration_cast<chrono::milliseconds>(
       chrono::steady_clock::now() - start);
     cout <<(to_string(delta.count()) + " ms") << endl;
+
+    camera.setPosition(3.0f * sinf(radian), 1.0f, 3.0f * cosf(radian));
+    radian += 0.01;
 
     for (int i = 0; i < pixels.size(); i++) {
       pixels[i] = uint8_t(frame.colors[i] * 255);

@@ -4,9 +4,9 @@
 
 class Camera {
 public:
-  Camera(uint32_t w, uint32_t h): width(w), height(h) {}
-  uint32_t width;
-  uint32_t height;
+  Camera(int w, int h): width(w), height(h) {}
+  int width;
+  int height;
   virtual Eigen::Matrix4f getViewMatrix() const = 0;
   virtual Eigen::Matrix4f getProjectionMatrix() const = 0;
 

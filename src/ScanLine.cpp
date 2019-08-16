@@ -2,7 +2,7 @@
 
 using namespace std;
 
-vector<size_t> scan(vector<size_t> &edgeIndexes, vector<size_t> &polygonIndexes,
+vector<size_t> _scan(vector<size_t> &edgeIndexes, vector<size_t> &polygonIndexes,
                     vector<Edge> &edges, vector<Polygon> &polygons,
                     vector<float> &zbuffer, int y, int width) {
   vector<size_t> unfinished;

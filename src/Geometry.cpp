@@ -8,6 +8,8 @@ Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i) {
   this->indices = move(i);
 }
 
+Geometry::Geometry(vector<Vector3f> v) { this->vertices = move(v); }
+
 unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {
   using vec3 = Vector3f;
   auto hw = w / 2, hh = h / 2, hd = d / 2;

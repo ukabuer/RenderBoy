@@ -9,6 +9,7 @@ class Renderer;
 class Geometry {
 public:
   Geometry(std::vector<Eigen::Vector3f> v, std::vector<uint32_t> indice);
+  Geometry(std::vector<Eigen::Vector3f> v);
   static std::unique_ptr<Geometry> Box(float width, float height, float depth);
   friend class Mesh;
   friend class Renderer;
