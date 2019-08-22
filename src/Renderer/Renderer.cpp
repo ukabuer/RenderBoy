@@ -18,7 +18,10 @@ using Eigen::Matrix4f;
 
 Frame Renderer::render(const Scene &scene, const Camera &camera) {
   const auto &meshes = scene.meshes;
-  Frame frame(camera.width, camera.height);
+  const auto width = camera.getWidth();
+  const auto height = camera.getHeight();
+
+  Frame frame(width, height);
 
   Matrix4f viewMatrix = camera.getViewMatrix().inverse();
   Matrix4f projectionMatrix = camera.getProjectionMatrix();
@@ -34,10 +37,11 @@ Frame Renderer::render(const Scene &scene, const Camera &camera) {
     const auto vertexNum =
         useIndices ? geo->indices.size() : geo->vertices.size();
     primitives.resize(vertexNum / 3);
-    Scaner scaner(camera, primitives.size());
 
-    parallel_for(blocked_range<size_t>(0, primitives.size()), [&](auto &r) {
-      for (auto i = r.begin(); i != r.end(); i++) {
+    Scaner scaner(width, height, primitives.size());
+
+    // parallel_for(blocked_range<size_t>(0, primitives.size()), [&](auto &r) {
+      for (auto i = 0; i != primitives.size(); i++) {
         auto idx = i * 3;
         auto &primitive = primitives[i];
 
@@ -48,23 +52,23 @@ Frame Renderer::render(const Scene &scene, const Camera &camera) {
           primitive.add(out, camera);
         }
 
-        if (primitive.maxY < 0 || primitive.minY >= camera.height) {
+        if (primitive.maxY < 0 || primitive.minY >= height) {
           continue;
         }
 
         scaner.add(primitive);
       }
-    });
+    // });
 
-    for (int y = camera.height - 1; y >= 0; y--) {
+    for (int y = height - 1; y >= 0; y--) {
       auto nothing = scaner.scan(y);
 
       if (nothing) {
         continue;
       }
 
-      for (int x = 0; x < camera.width; x++) {
-        int offset = (x + (camera.height - y - 1) * camera.width) * 4;
+      for (int x = 0; x < width; x++) {
+        int offset = (x + (height - y - 1) * width) * 4;
         float v = 0;
         if (scaner.zbuffer[x] != -1000.0f) {
           v = 1.0f;

@@ -2,16 +2,79 @@
 
 using namespace std;
 
-vector<size_t> _scan(vector<size_t> &edgeIndexes, vector<size_t> &polygonIndexes,
-                    vector<Edge> &edges, vector<Polygon> &polygons,
-                    vector<float> &zbuffer, int y, int width) {
+void Scaner::add(Primitive &primitive) {
+  auto y = primitive.maxY >= (int)height ? height - 1 : primitive.maxY;
+  auto &coef = primitive.getPlaneCoefficient();
+
+  int i = polygons.size();
+  polygons.emplace_back(i, coef);
+  polygonTable[y].push_back(i);
+
+  const auto &p = primitive.projected;
+  const auto &t = primitive.transformed;
+  const auto num = 3;
+  for (int j = 0; j < num; j++) {
+    auto index = polygonTable[y].back();
+    auto &polygon = polygons[index];
+
+    auto &p1 = p[j];
+    auto &p2 = p[(j + 1) % num];
+
+    auto upperIdx = p1[1] > p2[1] ? j : (j + 1) % num;
+    auto lowerIdx = p1[1] > p2[1] ? (j + 1) % num : j;
+
+    auto &upper = p1[1] > p2[1] ? p1 : p2;
+    auto &lower = p1[1] > p2[1] ? p2 : p1;
+    auto deltaX = upper[0] - lower[0];
+    auto deltaY = upper[1] - lower[1];
+    auto upperZ = t[upperIdx][2];
+
+    if (upper[1] < 0) {
+      continue;
+    }
+
+    ScanEdge edge(i, upper[0], upper[1],
+                  deltaY <= 0 ? 0 : -(float)deltaX / deltaY, deltaY, upperZ);
+
+    if (edge.dy >= 1) {
+      auto y = (int)upper[1];
+      y = height - 1 < y ? height - 1 : y;
+      edgeTable[y].push_back(edges.size());
+    }
+
+    if (edge.maxY > height - 1) {
+      auto deltaY = edge.maxY - height + 1;
+      auto deltaX = edge.k * deltaY;
+      auto &polygon = polygons[edge.polygonId];
+      edge.x += deltaX;
+      edge.z += polygon.dzx * deltaX + polygon.dzy * deltaY;
+      edge.dy -= deltaY;
+    }
+
+    edges.push_back(edge);
+  }
+}
+
+bool Scaner::scan(size_t y) {
+  auto nothing = false;
+  auto &edgeIndexes = edgeTable[y];
+  auto &polygonIndexes = polygonTable[y];
+
+  for (int x = 0; x < width; x++) {
+    zbuffer[x] = -1000.0f;
+  }
+
+  if (edgeIndexes.size() == 0) {
+    return nothing;
+  }
+
   vector<size_t> unfinished;
 
   int polygonCount = 0;
   float left = 0.f, right = 0.f;
 
   sort(edgeIndexes.begin(), edgeIndexes.end(),
-       [&edges](size_t a, size_t b) { return edges[a].x < edges[b].x; });
+       [&](size_t a, size_t b) { return edges[a].x < edges[b].x; });
 
   for (auto &index : edgeIndexes) {
     auto &edge = edges[index];
@@ -62,7 +125,6 @@ vector<size_t> _scan(vector<size_t> &edgeIndexes, vector<size_t> &polygonIndexes
         auto zl = -(float)(poly.A * left + poly.B * y + poly.D) / poly.C;
         auto zr = -(float)(poly.A * right + poly.B * y + poly.D) / poly.C;
         if ((zl - maxZL) * (zr - maxZR) < 0) {
-          // 两端差值异号，说明贯穿
           hasThrough = true;
           break;
         }
@@ -121,5 +183,15 @@ vector<size_t> _scan(vector<size_t> &edgeIndexes, vector<size_t> &polygonIndexes
     }
   }
 
-  return unfinished;
+  if (!unfinished.empty() && y > 0) {
+    auto &next = edgeTable[y - 1];
+    next.insert(next.end(), unfinished.begin(), unfinished.end());
+    auto &nextPolygons = polygonTable[y - 1];
+    for (auto &idx : next) {
+      auto &edge = edges[idx];
+      nextPolygons.push_back(edge.polygonId);
+    }
+  }
+
+  return nothing;
 }
