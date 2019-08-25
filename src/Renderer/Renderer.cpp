@@ -4,9 +4,9 @@
 #include "ScanLine.hpp"
 #include "tbb/parallel_for.h"
 #include <algorithm>
+#include <cmath>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 using namespace std;
 using namespace tbb;
@@ -41,23 +41,23 @@ Frame Renderer::render(const Scene &scene, const Camera &camera) {
     Scaner scaner(width, height, primitives.size());
 
     // parallel_for(blocked_range<size_t>(0, primitives.size()), [&](auto &r) {
-      for (auto i = 0; i != primitives.size(); i++) {
-        auto idx = i * 3;
-        auto &primitive = primitives[i];
+    for (auto i = 0; i != primitives.size(); i++) {
+      auto idx = i * 3;
+      auto &primitive = primitives[i];
 
-        for (int j = 0; j < 3; j++) {
-          auto &v = useIndices ? geo->vertices[geo->indices[idx + j]]
-                               : geo->vertices[idx + j];
-          vec4f out = matrix * vec4f(v[0], v[1], v[2], 1.0);
-          primitive.add(out, camera);
-        }
-
-        if (primitive.maxY < 0 || primitive.minY >= height) {
-          continue;
-        }
-
-        scaner.add(primitive);
+      for (int j = 0; j < 3; j++) {
+        auto &v = useIndices ? geo->vertices[geo->indices[idx + j]]
+                             : geo->vertices[idx + j];
+        vec4f out = matrix * vec4f(v[0], v[1], v[2], 1.0);
+        primitive.add(out, camera);
       }
+
+      if (primitive.maxY < 0 || primitive.minY >= height) {
+        continue;
+      }
+
+      scaner.add(primitive);
+    }
     // });
 
     for (int y = height - 1; y >= 0; y--) {

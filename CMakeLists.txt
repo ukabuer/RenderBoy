@@ -11,11 +11,13 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(SFML 2 REQUIRED COMPONENTS graphics)
 find_package(TBB REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(assimp REQUIRED)
 
 add_executable(RenderBoy)
 target_sources(RenderBoy
@@ -25,6 +27,7 @@ target_sources(RenderBoy
     src/Camera/PerspectiveCamera.cpp
     src/Renderer/Renderer.cpp
     src/ScanLine.cpp
+    src/Model.cpp
 )
 target_link_libraries(RenderBoy
   PRIVATE
@@ -32,10 +35,12 @@ target_link_libraries(RenderBoy
     TBB::tbb
     Eigen3::Eigen
     spdlog::spdlog
+    ${ASSIMP_LIBRARY_RELEASE}
 )
 target_include_directories(RenderBoy
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}
+    ${ASSIMP_INCLUDE_DIR}
 )
 target_compile_features(RenderBoy PRIVATE cxx_std_14)

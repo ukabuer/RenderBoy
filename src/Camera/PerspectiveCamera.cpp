@@ -16,7 +16,9 @@ inline Matrix4f calculateViewMatrix(const Vector3f &pos, const Vector3f &target,
   return result;
 }
 
-PerspectiveCamera::PerspectiveCamera(float fovy, uint32_t width, uint32_t height, float zNear, float zFar): Camera(width, height) {
+PerspectiveCamera::PerspectiveCamera(float fovy, uint32_t width,
+                                     uint32_t height, float zNear, float zFar)
+    : Camera(width, height) {
   float radf = fovy;
 
   float tanHalfFovy = tan(radf / 2.0f);
@@ -39,11 +41,9 @@ void PerspectiveCamera::setPosition(float x, float y, float z) {
   this->viewMatrix = calculateViewMatrix(position, target, up);
 }
 
-Matrix4f PerspectiveCamera::getViewMatrix() const {
-  return this->viewMatrix;
-}
+Matrix4f PerspectiveCamera::getViewMatrix() const { return this->viewMatrix; }
 
 Matrix4f PerspectiveCamera::getProjectionMatrix() const {
-  return this->projectionMatrix;;
+  return this->projectionMatrix;
+  ;
 }
-

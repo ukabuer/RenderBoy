@@ -44,9 +44,8 @@ struct Primitive {
   inline void add(const Eigen::Vector4f &nv, const Camera &camera) {
     const auto width = camera.getWidth();
     const auto height = camera.getHeight();
-    projected[num] =
-        Eigen::Vector2i(int((nv[0] / nv[2] + 1.0f) * width / 2),
-                        int((nv[1] / nv[2] + 1.0f) * height / 2));
+    projected[num] = Eigen::Vector2i(int((nv[0] / nv[2] + 1.0f) * width / 2),
+                                     int((nv[1] / nv[2] + 1.0f) * height / 2));
     transformed[num] = Eigen::Vector3f(nv[0], nv[1], nv[2]);
     maxY = maxY > projected[num][1] ? maxY : projected[num][1];
     minY = minY < projected[num][1] ? minY : projected[num][1];
@@ -75,7 +74,7 @@ struct Primitive {
                   (p[2][0] - p[0][0]) * (p[1][1] - p[0][1]));
       D = -A * p[0][0] - B * p[0][1] - C * t[0][2];
     }
-    auto &coef = const_cast<Eigen::Vector4f&>(this->coef);
+    auto &coef = const_cast<Eigen::Vector4f &>(this->coef);
     coef << A, B, C, D;
     isCoefCalculated = true;
     return coef;
@@ -96,8 +95,8 @@ struct Scaner {
   std::vector<float> zbuffer;
 
   Scaner(int width, int height, size_t n)
-      : height(height), width(width), polygonTable(height),
-        edgeTable(height), zbuffer(width, -1000.0f) {
+      : height(height), width(width), polygonTable(height), edgeTable(height),
+        zbuffer(width, -1000.0f) {
     polygons.reserve(n);
     edges.reserve(n * 3);
   }

@@ -6,7 +6,7 @@ class Renderer;
 
 class Mesh {
 public:
-  Mesh(std::shared_ptr<Geometry> geo): geometry(geo) {}
+  Mesh(std::shared_ptr<Geometry> geo) : geometry(geo) {}
   friend class Renderer;
 
 protected:

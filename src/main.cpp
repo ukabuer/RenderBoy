@@ -1,10 +1,11 @@
+#include "Camera/PerspectiveCamera.hpp"
+#include "Model.hpp"
+#include "Renderer/Renderer.hpp"
 #include "SFML/Graphics.hpp"
 #include <atomic>
+#include <chrono>
 #include <iostream>
 #include <vector>
-#include <chrono>
-#include "Renderer/Renderer.hpp"
-#include "Camera/PerspectiveCamera.hpp"
 
 using namespace std;
 
@@ -12,12 +13,22 @@ int main(int argc, const char **argv) {
   const auto width = 800;
   const auto height = 600;
 
+  if (argc < 2) {
+    cerr << "Usage: " << argv[0] << " /path/to/model/file" << endl;
+    return 1;
+  }
+
   shared_ptr<Geometry> geometry = Geometry::Box(1, 1, 1);
   // Material mat;
-  auto cube = make_shared<Mesh>(geometry);
+  // auto cube = make_shared<Mesh>(geometry);
+
+  string path(argv[1]);
+  Model model(path);
   Renderer renderer;
   Scene scene;
-  scene.add(cube);
+  //  scene.add(cube);
+  for_each(model.meshes.begin(), model.meshes.end(),
+           [&scene](auto &mesh) { scene.add(mesh); });
   PerspectiveCamera camera(45, width, height, 0, 1000);
   camera.setPosition(1.0f, 1.0f, 3.0f);
   float radian = 0.0f;
@@ -43,8 +54,8 @@ int main(int argc, const char **argv) {
     auto frame = renderer.render(scene, camera);
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(
-      chrono::steady_clock::now() - start);
-    cout <<(to_string(delta.count()) + " ms") << endl;
+        chrono::steady_clock::now() - start);
+    cout << (to_string(delta.count()) + " ms") << endl;
 
     camera.setPosition(3.0f * sinf(radian), 1.0f, 3.0f * cosf(radian));
     radian += 0.01;
@@ -56,7 +67,6 @@ int main(int argc, const char **argv) {
 
     window.draw(sprite);
     window.display();
-
   }
 
   return 0;
