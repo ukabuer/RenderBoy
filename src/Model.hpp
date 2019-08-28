@@ -5,6 +5,6 @@
 
 class Model {
 public:
-  Model(const std::string &path);
+  explicit Model(const std::string &path);
   std::vector<std::shared_ptr<Mesh>> meshes;
 };
