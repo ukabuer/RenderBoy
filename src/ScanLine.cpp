@@ -6,7 +6,7 @@ void Scaner::add(Primitive &primitive) {
   auto y = primitive.maxY >= (int)height ? height - 1 : primitive.maxY;
   auto &coef = primitive.getPlaneCoefficient();
 
-  int i = polygons.size();
+  size_t i = polygons.size();
   polygons.emplace_back(i, coef);
   polygonTable[y].push_back(i);
 
@@ -37,7 +37,7 @@ void Scaner::add(Primitive &primitive) {
                   deltaY <= 0 ? 0 : -(float)deltaX / deltaY, deltaY, upperZ);
 
     if (edge.dy >= 1) {
-      auto y = (int)upper[1];
+      auto y = (size_t)upper[1];
       y = height - 1 < y ? height - 1 : y;
       edgeTable[y].push_back(edges.size());
     }
@@ -61,7 +61,7 @@ bool Scaner::scan(size_t y) {
   auto &polygonIndexes = polygonTable[y];
 
   for (int x = 0; x < width; x++) {
-    zbuffer[x] = -1000.0f;
+    zbuffer[x] = FLT_MIN;
   }
 
   if (edgeIndexes.size() == 0) {

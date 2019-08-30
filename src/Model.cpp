@@ -28,7 +28,7 @@ unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene) {
 
 static void findMesh(vector<shared_ptr<Mesh>> &meshes, aiNode *node,
                      const aiScene *scene) {
-  for (int i = 0; i < node->mNumMeshes; i++) {
+  for (size_t i = 0; i < node->mNumMeshes; i++) {
     auto mesh = scene->mMeshes[node->mMeshes[i]];
     meshes.push_back(processMesh(mesh, scene));
   }

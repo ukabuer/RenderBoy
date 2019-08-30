@@ -58,7 +58,7 @@ int main(int argc, const char **argv) {
     cout << (to_string(delta.count()) + " ms") << endl;
 
     camera.setPosition(3.0f * sinf(radian), 1.0f, 3.0f * cosf(radian));
-    radian += 0.01;
+    radian += 0.01f;
 
     for (int i = 0; i < pixels.size(); i++) {
       pixels[i] = uint8_t(frame.colors[i] * 255);

@@ -19,13 +19,13 @@ struct ScanEdge {
 };
 
 struct ScanPolygon {
-  int id;
+  size_t id;
   float dzx;
   float dzy;
   float A, B, C, D;
   bool isIn;
   ScanPolygon() = default;
-  ScanPolygon(int id, const Eigen::Vector4f &coef)
+  ScanPolygon(size_t id, const Eigen::Vector4f &coef)
       : id(id), isIn(false), A(coef[0]), B(coef[1]), C(coef[2]), D(coef[3]) {
     dzx = coef[2] == 0 ? 0 : -coef[0] / coef[2];
     dzy = coef[2] == 0 ? 0 : coef[1] / coef[2];
@@ -96,7 +96,7 @@ struct Scaner {
 
   Scaner(int width, int height, size_t n)
       : height(height), width(width), polygonTable(height), edgeTable(height),
-        zbuffer(width, -1000.0f) {
+        zbuffer(width, FLT_MIN) {
     polygons.reserve(n);
     edges.reserve(n * 3);
   }
