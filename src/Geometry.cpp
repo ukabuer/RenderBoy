@@ -8,6 +8,12 @@ Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i) {
   this->indices = move(i);
 }
 
+Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i, vector<Vector3f> n) {
+  this->vertices = move(v);
+  this->indices = move(i);
+  this->normals = move(n);
+}
+
 Geometry::Geometry(vector<Vector3f> v) { this->vertices = move(v); }
 
 unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {

@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Eigen;
 
-inline Matrix4f calculateViewMatrix(const Vector3f &pos, const Vector3f &target,
+static inline Matrix4f calculateViewMatrix(const Vector3f &pos, const Vector3f &target,
                                     const Vector3f &up) {
   Matrix4f result;
   auto zAxis = (pos - target).normalized();
@@ -36,14 +36,17 @@ PerspectiveCamera::PerspectiveCamera(float fovy, uint32_t width,
   this->up = Vector3f(0, 1, 0);
 }
 
-void PerspectiveCamera::setPosition(float x, float y, float z) {
-  this->position = Vector3f(x, y, z);
-  this->viewMatrix = calculateViewMatrix(position, target, up);
+Matrix4f PerspectiveCamera::getViewMatrix() const {
+  if (changed) {
+    this->viewMatrix = calculateViewMatrix(position, target, up);
+    changed = false;
+  }
+  return this->viewMatrix;
 }
 
-Matrix4f PerspectiveCamera::getViewMatrix() const { return this->viewMatrix; }
-
 Matrix4f PerspectiveCamera::getProjectionMatrix() const {
+  if (changed) {
+    changed = false;
+  }
   return this->projectionMatrix;
-  ;
 }

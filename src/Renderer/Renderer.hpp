@@ -7,6 +7,8 @@
 class Renderer {
 public:
   Renderer() {}
-  Frame render(const Scene &scene, const Camera &camera);
-  friend class Scene;
+  
+  virtual ~Renderer() {};
+
+  virtual Frame render(const Scene &scene, const Camera &camera) = 0;
 };

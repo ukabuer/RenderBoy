@@ -10,10 +10,10 @@ public:
       : width(width), height(height), size(width * height),
         zBuffer(width * height, FLT_MIN), colors(width * height * 4, 0.0f) {}
   std::vector<float> colors;
+  std::vector<float> zBuffer;
   uint32_t size;
 
 private:
   uint32_t width;
   uint32_t height;
-  std::vector<float> zBuffer;
 };

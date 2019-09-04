@@ -5,10 +5,12 @@
 
 class Scene {
 public:
-  Scene() {}
-  void add(std::shared_ptr<Mesh> mesh) { meshes.push_back(mesh); };
-  friend class Renderer;
+  inline void add(std::shared_ptr<Mesh> mesh) { meshes.push_back(mesh); };
 
-protected:
+  inline const std::vector<std::shared_ptr<Mesh>> &getMeshes() const {
+    return meshes;
+  }
+
+private:
   std::vector<std::shared_ptr<Mesh>> meshes;
 };

@@ -1,6 +1,7 @@
 #include "Camera/PerspectiveCamera.hpp"
 #include "Model.hpp"
-#include "Renderer/Renderer.hpp"
+#include "Renderer/ScanLineRenderer.hpp"
+#include "Renderer/RasterizationRenderer.hpp"
 #include "SFML/Graphics.hpp"
 #include <atomic>
 #include <chrono>
@@ -18,15 +19,10 @@ int main(int argc, const char **argv) {
     return 1;
   }
 
-  shared_ptr<Geometry> geometry = Geometry::Box(1, 1, 1);
-  // Material mat;
-  // auto cube = make_shared<Mesh>(geometry);
-
   string path(argv[1]);
   Model model(path);
-  Renderer renderer;
+  auto renderer = make_unique<RasterizationRenderer>();
   Scene scene;
-  //  scene.add(cube);
   for_each(model.meshes.begin(), model.meshes.end(),
            [&scene](auto &mesh) { scene.add(mesh); });
   PerspectiveCamera camera(45, width, height, 0, 1000);
@@ -34,7 +30,7 @@ int main(int argc, const char **argv) {
   float radian = 0.0f;
 
   // display
-  sf::RenderWindow window(sf::VideoMode(width, height), "Rasterizer");
+  sf::RenderWindow window(sf::VideoMode(width, height), "RenderBoy");
   sf::Texture texture;
   texture.create(width, height);
   sf::Sprite sprite;
@@ -51,11 +47,11 @@ int main(int argc, const char **argv) {
 
     auto start = chrono::steady_clock::now();
 
-    auto frame = renderer.render(scene, camera);
+    auto frame = renderer->render(scene, camera);
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(
         chrono::steady_clock::now() - start);
-    cout << (to_string(delta.count()) + " ms") << endl;
+    cout << "\r" << (to_string(delta.count()) + " ms");
 
     camera.setPosition(3.0f * sinf(radian), 1.0f, 3.0f * cosf(radian));
     radian += 0.01f;

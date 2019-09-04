@@ -56,7 +56,6 @@ void Scaner::add(Primitive &primitive) {
 }
 
 bool Scaner::scan(size_t y) {
-  auto nothing = false;
   auto &edgeIndexes = edgeTable[y];
   auto &polygonIndexes = polygonTable[y];
 
@@ -65,7 +64,7 @@ bool Scaner::scan(size_t y) {
   }
 
   if (edgeIndexes.size() == 0) {
-    return nothing;
+    return false;
   }
 
   vector<size_t> unfinished;
@@ -193,5 +192,5 @@ bool Scaner::scan(size_t y) {
     }
   }
 
-  return nothing;
+  return true;
 }

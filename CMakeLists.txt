@@ -23,6 +23,7 @@ find_package(SFML CONFIG REQUIRED graphics)
 find_package(TBB CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_path(STB_IMAGE_INCLUDE_DIR stb_image.h)
 
 add_executable(RenderBoy)
 target_sources(RenderBoy
@@ -30,8 +31,9 @@ target_sources(RenderBoy
     src/main.cpp
     src/Geometry.cpp
     src/Camera/PerspectiveCamera.cpp
-    src/Renderer/Renderer.cpp
-    src/ScanLine.cpp
+    src/Renderer/ScanLineRenderer.cpp
+    src/Renderer/RasterizationRenderer.cpp
+    src/Renderer/ScanLine.cpp
     src/Model.cpp
 )
 target_link_libraries(RenderBoy
@@ -45,5 +47,6 @@ target_include_directories(RenderBoy
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src
     ${ASSIMP_INCLUDE_DIRS}
+    ${STB_IMAGE_INCLUDE_DIR}
 )
 target_compile_features(RenderBoy PRIVATE cxx_std_14)
