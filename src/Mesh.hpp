@@ -1,18 +1,18 @@
 #pragma once
+
 #include "Geometry.hpp"
 #include "Material/Texture.hpp"
 #include <memory>
-
-class Renderer;
+#include <utility>
 
 class Mesh {
 public:
   Mesh(std::shared_ptr<Geometry> geo, std::vector<Texture *> textures)
-      : geometry(geo), textures(std::move(textures)) {}
+      : geometry(std::move(geo)), textures(std::move(textures)) {}
 
-  inline const Geometry& getGeometry() const {
-    return *geometry;
-  }
+  const Geometry &getGeometry() const { return *geometry; }
+
+  const std::vector<Texture *> &getTextures() const { return textures; }
 
 private:
   std::shared_ptr<Geometry> geometry;

@@ -3,15 +3,22 @@
 
 class PerspectiveCamera : public Camera {
 public:
-  PerspectiveCamera(float fovy, uint32_t width, uint32_t height, float near,
+  PerspectiveCamera(float fov, uint32_t width, uint32_t height, float near,
                     float far);
 
-  ~PerspectiveCamera() {}
+  void setFOV(float fov);
+  float getFOV() const { return this->fov; }
 
-  Eigen::Matrix4f getViewMatrix() const override;
+  void setZNear(float zNear);
+  float getZNear() const { return this->zNear; }
+
+  void setZFar(float zFar);
+  float getZFar() const { return this->zFar; }
+
   Eigen::Matrix4f getProjectionMatrix() const override;
 
 private:
-  mutable Eigen::Matrix4f viewMatrix;
-  mutable Eigen::Matrix4f projectionMatrix;
+  float fov;
+  float zNear;
+  float zFar;
 };

@@ -5,7 +5,6 @@
 #include <vector>
 
 class Mesh;
-class Renderer;
 
 class Geometry {
   friend class Mesh;
@@ -15,17 +14,20 @@ public:
 
   Geometry(std::vector<Eigen::Vector3f> v, std::vector<uint32_t> indices);
 
-  Geometry(std::vector<Eigen::Vector3f> v, std::vector<uint32_t> indices,  std::vector<Eigen::Vector3f> normals);
+  Geometry(std::vector<Eigen::Vector3f> v, std::vector<uint32_t> indices,
+           std::vector<Eigen::Vector3f> normals);
 
-  inline const std::vector<Eigen::Vector3f> &getVertices() const {
-    return vertices;
-  }
+  Geometry(std::vector<Eigen::Vector3f> v, std::vector<uint32_t> i,
+           std::vector<Eigen::Vector3f> n,
+           std::vector<Eigen::Vector2f> uv);
 
-  inline const std::vector<uint32_t> &getIndicess() const { return indices; }
+  const std::vector<Eigen::Vector3f> &getVertices() const { return vertices; }
 
-  inline const std::vector<Eigen::Vector2f> &getTexCoords() const {
-    return texCoords;
-  }
+  const std::vector<uint32_t> &getIndices() const { return indices; }
+
+  const std::vector<Eigen::Vector3f> &getNormals() const { return normals; }
+
+  const std::vector<Eigen::Vector2f> &getTexCoords() const { return texCoords; }
 
   static std::unique_ptr<Geometry> Box(float width, float height, float depth);
 

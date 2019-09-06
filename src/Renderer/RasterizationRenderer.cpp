@@ -1,32 +1,23 @@
 #include "Renderer/RasterizationRenderer.hpp"
 #include <Eigen/Core>
-#include <Eigen/Geometry>
 #include <array>
 
 using namespace std;
 using namespace Eigen;
-using vec2i = Eigen::Vector2i;
-using vec4f = Eigen::Vector4f;
-using vec3f = Eigen::Vector3f;
+using vec4f = Vector4f;
+using vec3f = Vector3f;
 
-struct Point2D {
-  int x, y;
-  float z;
-  Point2D() = default;
-  Point2D(int x, int y, float z) : x(x), y(y), z(z) {}
-};
-
-int orient2d(const Point2D &a, const Point2D &b, const Point2D &c) {
+inline int orient2d(const Point &a, const Point &b, const Point &c) {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 inline int max3(int a, int b, int c) {
-  int tmp = a > b ? a : b;
+  auto tmp = a > b ? a : b;
   return c > tmp ? c : tmp;
 }
 
 inline int min3(int a, int b, int c) {
-  int tmp = a < b ? a : b;
+  auto tmp = a < b ? a : b;
   return c < tmp ? c : tmp;
 }
 
@@ -34,13 +25,14 @@ inline int max(int a, int b) { return a > b ? a : b; }
 
 inline int min(int a, int b) { return a < b ? a : b; }
 
-inline void drawTri(const Point2D &v0, const Point2D &v1, const Point2D &v2,
-                    size_t width, size_t height, Frame &frame) {
+inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
+                         int width, int height, const Texture &texture,
+                         Frame &frame) {
   // Compute triangle bounding box
-  int minX = min3(v0.x, v1.x, v2.x);
-  int minY = min3(v0.y, v1.y, v2.y);
-  int maxX = max3(v0.x, v1.x, v2.x);
-  int maxY = max3(v0.y, v1.y, v2.y);
+  auto minX = min3(v0.x, v1.x, v2.x);
+  auto minY = min3(v0.y, v1.y, v2.y);
+  auto maxX = max3(v0.x, v1.x, v2.x);
+  auto maxY = max3(v0.y, v1.y, v2.y);
 
   // Clip against screen bounds
   minX = max(minX, 0);
@@ -48,29 +40,51 @@ inline void drawTri(const Point2D &v0, const Point2D &v1, const Point2D &v2,
   maxX = min(maxX, width - 1);
   maxY = min(maxY, height - 1);
 
-  int A01 = v0.y - v1.y, B01 = v1.x - v0.x;
-  int A12 = v1.y - v2.y, B12 = v2.x - v1.x;
-  int A20 = v2.y - v0.y, B20 = v0.x - v2.x;
+  const auto A01 = v0.y - v1.y, B01 = v1.x - v0.x;
+  const auto A12 = v1.y - v2.y, B12 = v2.x - v1.x;
+  const auto A20 = v2.y - v0.y, B20 = v0.x - v2.x;
 
-  Point2D p = {minX, minY, 0};
-  int w0_row = orient2d(v1, v2, p);
-  int w1_row = orient2d(v2, v0, p);
-  int w2_row = orient2d(v0, v1, p);
+  Point p;
+  p.x = minX;
+  p.y = minY;
+  auto w0_row = orient2d(v1, v2, p);
+  auto w1_row = orient2d(v2, v0, p);
+  auto w2_row = orient2d(v0, v1, p);
 
   // Rasterize
   for (p.y = minY; p.y <= maxY; p.y++) {
     // Determine barycentric coordinates
-    int w0 = w0_row;
-    int w1 = w1_row;
-    int w2 = w2_row;
+    auto w0 = w0_row;
+    auto w1 = w1_row;
+    auto w2 = w2_row;
+
+    const auto sum = w0 + w1 + w2;
+    if (sum == 0) {
+      continue;
+    }
 
     for (p.x = minX; p.x <= maxX; p.x++) {
       // If p is on or inside all edges, render pixel.
       if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-        auto idx = p.x + p.y * width;
-        auto z = w0 * v0.z + w1 * v1.z + w2 * v2.z;
-        if (z > frame.zBuffer[idx]) {
-          frame.zBuffer[idx] = z;
+        auto idx = static_cast<size_t>(p.x + p.y * width);
+        const auto z = (w0 * v0.z + w1 * v1.z + w2 * v2.z) / sum;
+
+        if (-z > frame.zBuffer[idx]) {
+          frame.zBuffer[idx] = -z;
+          const auto textureX =
+              (w0 * v0.u + w1 * v1.u + w2 * v2.u) * texture.width / sum;
+          const auto textureY =
+              (w0 * v0.v + w1 * v1.v + w2 * v2.v) * texture.height / sum;
+          const auto channels = texture.channels;
+          auto textureIdx =
+              static_cast<size_t>(
+                (texture.height - textureY) * texture.width + textureX);
+          textureIdx = channels == 4 ? textureIdx * 4 : textureIdx * 3;
+          idx *= 4;
+          frame.colors[idx] = texture.data[textureIdx];
+          frame.colors[idx + 1] = texture.data[textureIdx + 1];
+          frame.colors[idx + 2] = texture.data[textureIdx + 2];
+          frame.colors[idx + 3] = 255.0f;
         }
       }
 
@@ -91,20 +105,21 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
 
   Frame frame(width, height);
 
-  Matrix4f viewMatrix = camera.getViewMatrix().inverse();
-  Matrix4f projectionMatrix = camera.getProjectionMatrix();
-  Matrix4f matrix = projectionMatrix * viewMatrix;
+  const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
+  const Matrix4f projectionMatrix = camera.getProjectionMatrix();
+  const Matrix4f matrix = projectionMatrix * viewMatrix;
 
-  vector<array<Point2D, 3>> primitives;
-  for (size_t i = 0; i < meshes.size(); i++) {
-    auto &mesh = meshes[i];
+  vector<array<Point, 3>> primitives;
+  auto offset = 0u;
+  for (auto &mesh : meshes) {
     auto &geo = mesh->getGeometry();
-    size_t offset = 0;
 
-    auto &indices = geo.getIndicess();
+    auto &indices = geo.getIndices();
     auto &vertices = geo.getVertices();
+    auto &texCoords = geo.getTexCoords();
+    auto &normals = geo.getNormals();
 
-    const auto useIndices = indices.size() > 0;
+    const auto useIndices = !indices.empty();
     const auto vertexNum = useIndices ? indices.size() : vertices.size();
     const auto primitiveNum = vertexNum / 3;
 
@@ -112,46 +127,33 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
 
     for (size_t j = 0; j < primitiveNum; j++) {
       const auto idx = j * 3;
-      assert((offset + j) < primitives.size());
+      assert(offset + j < primitives.size());
       auto &primitive = primitives[offset + j];
 
       for (size_t k = 0; k < 3; k++) {
         auto &v = useIndices ? vertices[indices[idx + k]] : vertices[idx + k];
+        auto &uv =
+            useIndices ? texCoords[indices[idx + k]] : texCoords[idx + k];
+        auto normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
         vec4f nv = matrix * vec4f(v[0], v[1], v[2], 1.0);
-        Point2D p(int((nv[0] / nv[2] + 1.0f) * width / 2),
-                  int((nv[1] / nv[2] + 1.0f) * height / 2), nv[3]);
+        const Point p{static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
+                      static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),
+                      nv[2] / nv[3],
+                      uv[0],
+                      uv[1],
+                      {
+                          normal[0], normal[1], normal[2],
+                      }};
         primitive[k] = p;
       }
     }
+
+    offset += primitiveNum;
   }
 
+  auto &textures = meshes[0]->getTextures();
   for (auto &p : primitives) {
-    drawTri(p[0], p[1], p[2], width, height, frame);
-  }
-
-  auto total = width * height;
-  auto maxZ = FLT_MIN;
-  for (size_t i = 0; i < total; i++) {
-    auto z = frame.zBuffer[i];
-    if (z > maxZ) {
-      maxZ = z;
-    }
-  }
-
-  auto idx = 0;
-  for (size_t y = 0; y < height; y++) {
-    for (size_t x = 0; x < width; x++) {
-      if (frame.zBuffer[idx] == FLT_MIN) {
-        idx++;
-        continue;
-      }
-      auto offset = idx * 4;
-      auto z = frame.zBuffer[idx] / maxZ;
-      frame.colors[offset] = z;
-      frame.colors[offset + 1] = frame.colors[offset + 2] = z;
-      frame.colors[offset + 3] = 1.0f;
-      idx++;
-    }
+    drawTriangle(p[0], p[1], p[2], width, height, *textures[0], frame);
   }
 
   return frame;

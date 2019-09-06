@@ -1,35 +1,30 @@
 #pragma once
 
-#include "Eigen/Core"
+#include <Eigen/Core>
 #include <cstdint>
 
 class Camera {
 public:
-  Camera(uint32_t w, uint32_t h)
-      : width(w), height(h), position(0, 0, 1), up(0, 1, 0), target(0, 0, 0) {}
+  Camera(uint32_t w, uint32_t h);
+ 
+  virtual ~Camera() = default;
 
-  virtual ~Camera() {};
+  const Eigen::Vector3f &getPosition() const { return this->position; }
+  void setPosition(float x, float y, float z);
 
-  inline void setPosition(float x, float y, float z) {
-    position << x, y, z;
-    changed = true;
-  }
+  const Eigen::Vector3f &getUp() const { return this->up; }
+  void setUp(float x, float y, float z);
 
-  inline void setUp(float x, float y, float z) {
-    up << x, y, z;
-    changed = true;
-  }
+  const Eigen::Vector3f &getTarget() const { return this->target; }
+  void setTarget(float x, float y, float z);
 
-  inline void setTarget(float x, float y, float z) {
-    target << x, y, z;
-    changed = true;
-  }
+  uint32_t getWidth() const { return this->width; }
+  void setWidth(uint32_t w);
 
-  inline uint32_t getWidth() const { return width; }
+  uint32_t getHeight() const { return this->height; }
+  void setHeight(uint32_t h);
 
-  inline uint32_t getHeight() const { return height; }
-
-  virtual Eigen::Matrix4f getViewMatrix() const = 0;
+  virtual Eigen::Matrix4f getViewMatrix() const;
 
   virtual Eigen::Matrix4f getProjectionMatrix() const = 0;
 
@@ -41,7 +36,9 @@ protected:
   Eigen::Vector3f target;
   Eigen::Vector3f up;
 
-  mutable Eigen::Matrix4f matrix;
+  mutable Eigen::Matrix4f viewMatrix;
+  mutable Eigen::Matrix4f projectionMatrix;
 
-  mutable bool changed;
+  mutable bool viewChanged;
+  mutable bool projectionChanged;
 };

@@ -50,3 +50,6 @@ target_include_directories(RenderBoy
     ${STB_IMAGE_INCLUDE_DIR}
 )
 target_compile_features(RenderBoy PRIVATE cxx_std_14)
+
+enable_testing()
+add_subdirectory(tests)

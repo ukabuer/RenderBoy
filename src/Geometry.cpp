@@ -14,11 +14,18 @@ Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i, vector<Vector3f> n) {
   this->normals = move(n);
 }
 
+Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i, vector<Vector3f> n, vector<Vector2f> uv) {
+  this->vertices = move(v);
+  this->indices = move(i);
+  this->normals = move(n);
+  this->texCoords = move(uv);
+}
+
 Geometry::Geometry(vector<Vector3f> v) { this->vertices = move(v); }
 
 unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {
   using vec3 = Vector3f;
-  auto hw = w / 2, hh = h / 2, hd = d / 2;
+  const auto hw = w / 2, hh = h / 2, hd = d / 2;
   vector<vec3> vertices = {
       vec3(hw, hh, -hd),   vec3(hw, hh, hd),   vec3(hw, -hh, hd),
       vec3(hw, -hh, -hd),  vec3(-hw, hh, hd),  vec3(-hw, hh, -hd),

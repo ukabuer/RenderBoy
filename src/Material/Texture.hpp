@@ -3,10 +3,10 @@
 #include <string>
 
 struct Texture {
-  unsigned int id;
-  unsigned char *data;
-  size_t width;
-  size_t height;
+  unsigned char *data = nullptr;
+  size_t width = 0;
+  size_t height = 0;
+  size_t channels = 3;
   std::string type;
   std::string path;
 };

@@ -33,7 +33,7 @@ Frame ScanLineRenderer::render(const Scene &scene, const Camera &camera) {
     auto &geo = mesh->getGeometry();
     size_t offset = 0;
 
-    auto &indices = geo.getIndicess();
+    auto &indices = geo.getIndices();
     auto &vertices = geo.getVertices();
 
     const auto useIndices = indices.size() > 0;

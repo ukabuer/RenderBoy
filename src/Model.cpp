@@ -1,10 +1,10 @@
 #include "Model.hpp"
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include <iostream>
+#include <stb_image.h>
 #include <utility>
 #include <vector>
 
@@ -17,10 +17,10 @@ vector<Texture *> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
   for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
     aiString str;
     mat->GetTexture(type, i, &str);
-    bool skip = false;
-    for (unsigned int j = 0; j < texturesLoaded.size(); j++) {
-      if (std::strcmp(texturesLoaded[j].path.data(), str.C_Str()) == 0) {
-        textures.push_back(&texturesLoaded[j]);
+    auto skip = false;
+    for (auto &j : texturesLoaded) {
+      if (std::strcmp(j.path.data(), str.C_Str()) == 0) {
+        textures.push_back(&j);
         skip = true;
         break;
       }
@@ -31,10 +31,11 @@ vector<Texture *> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
       texture.data = stbi_load(str.C_Str(), &width, &height, &nrComponents, 0);
       texture.width = width;
       texture.height = height;
+      texture.channels = nrComponents;
       texture.type = typeName;
       texture.path = str.C_Str();
       texturesLoaded.push_back(texture);
-      textures.push_back(&(texturesLoaded.back()));
+      textures.push_back(&texturesLoaded.back());
     }
   }
   return textures;
@@ -61,25 +62,27 @@ unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene,
 
   vector<Texture *> diffuseMaps;
   if (mesh->mMaterialIndex >= 0) {
-    aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+    const auto material = scene->mMaterials[mesh->mMaterialIndex];
     diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE,
                                        "texture_diffuse", texturesLoaded);
   }
 
   for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-    aiFace face = mesh->mFaces[i];
+    const auto face = mesh->mFaces[i];
     for (unsigned int j = 0; j < face.mNumIndices; j++)
       indices.push_back(face.mIndices[j]);
   }
 
-  return make_unique<Mesh>(make_unique<Geometry>(move(vertices), move(indices), move(normals)),
+  return make_unique<Mesh>(make_unique<Geometry>(move(vertices), move(indices),
+                                                 move(normals),
+                                                 move(texCoords)),
                            move(diffuseMaps));
 }
 
 static void findMesh(vector<shared_ptr<Mesh>> &meshes, aiNode *node,
                      const aiScene *scene, vector<Texture> &texturesLoaded) {
   for (size_t i = 0; i < node->mNumMeshes; i++) {
-    auto mesh = scene->mMeshes[node->mMeshes[i]];
+    const auto mesh = scene->mMeshes[node->mMeshes[i]];
     meshes.push_back(processMesh(mesh, scene, texturesLoaded));
   }
 
@@ -92,12 +95,12 @@ static void import(vector<shared_ptr<Mesh>> &meshes, const std::string &file,
                    vector<Texture> &texturesLoaded) {
   Assimp::Importer importer;
 
-  const aiScene *scene = importer.ReadFile(
+  const auto scene = importer.ReadFile(
       file, aiProcess_CalcTangentSpace | aiProcess_Triangulate |
                 aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
   if (!scene) {
-    cerr << (importer.GetErrorString()) << endl;
+    cerr << importer.GetErrorString() << endl;
     return;
   }
 
