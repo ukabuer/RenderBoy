@@ -1,4 +1,5 @@
 #include "Camera/Camera.hpp"
+#include <Eigen/Geometry>
 
 using namespace Eigen;
 

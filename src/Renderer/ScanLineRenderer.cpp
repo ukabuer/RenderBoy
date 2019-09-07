@@ -76,9 +76,9 @@ Frame ScanLineRenderer::render(const Scene &scene, const Camera &camera) {
       if (scaner.zbuffer[x] != FLT_MIN) {
         v = 1.0f;
       }
-      frame.colors[offset] = v;
+      frame.colors[offset] = static_cast<unsigned char>(v);
       frame.colors[offset + 1] = frame.colors[offset + 2] = 0;
-      frame.colors[offset + 3] = 1.0f;
+      frame.colors[offset + 3] = 255u;
     }
   }
 

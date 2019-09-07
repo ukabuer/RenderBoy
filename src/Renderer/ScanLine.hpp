@@ -5,12 +5,12 @@
 #include <vector>
 
 struct ScanEdge {
+  size_t polygonId = 0;
   float x = 0.0f;
-  float z = 0.0f;
   float maxY = 0.0f;
   float k = 0.0f;
   float dy = 0.0f;
-  size_t polygonId = 0;
+  float z = 0.0f;
 };
 
 struct ScanPolygon {

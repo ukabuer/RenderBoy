@@ -2,7 +2,6 @@
 #include "Model.hpp"
 #include "Renderer/RasterizationRenderer.hpp"
 #include "SFML/Graphics.hpp"
-#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -24,8 +23,8 @@ int main(int argc, const char **argv) {
   Scene scene;
   for_each(model.meshes.begin(), model.meshes.end(),
            [&scene](auto &mesh) { scene.add(mesh); });
-  PerspectiveCamera camera(45, width, height, 0, 1000);
-  float radian = 0.0f;
+  PerspectiveCamera camera(45, width, height, 1.0f, 1000.0f);
+  auto radian = 0.0f;
 
   // display
   sf::RenderWindow window(sf::VideoMode(width, height), "RenderBoy");
@@ -52,7 +51,7 @@ int main(int argc, const char **argv) {
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(
         chrono::steady_clock::now() - start);
-    cout << "\r" << (to_string(delta.count()) + " ms");
+    cout << "\r" << to_string(delta.count()) + " ms";
 
     for (auto i = 0; i < height; i++) {
       for (auto j = 0; j < width; j++) {
@@ -60,9 +59,9 @@ int main(int argc, const char **argv) {
         auto offset2 = j + i * width;
         offset1 *= 4;
         offset2 *= 4;
-        pixels[offset1] = uint8_t(frame.colors[offset2]);
-        pixels[offset1 + 1] = uint8_t(frame.colors[offset2 + 1]);
-        pixels[offset1 + 2] = uint8_t(frame.colors[offset2 + 2]);
+        pixels[offset1] = frame.colors[offset2];
+        pixels[offset1 + 1] = frame.colors[offset2 + 1];
+        pixels[offset1 + 2] = frame.colors[offset2 + 2];
         pixels[offset1 + 3] = 255;
       }
     }

@@ -30,6 +30,7 @@ target_sources(RenderBoy
   PRIVATE
     src/main.cpp
     src/Geometry.cpp
+    src/Camera/Camera.cpp
     src/Camera/PerspectiveCamera.cpp
     src/Renderer/ScanLineRenderer.cpp
     src/Renderer/RasterizationRenderer.cpp
@@ -50,6 +51,3 @@ target_include_directories(RenderBoy
     ${STB_IMAGE_INCLUDE_DIR}
 )
 target_compile_features(RenderBoy PRIVATE cxx_std_14)
-
-enable_testing()
-add_subdirectory(tests)

@@ -14,14 +14,10 @@ void Scaner::add(Primitive &primitive) {
   const auto &t = primitive.transformed;
   const auto num = 3;
   for (int j = 0; j < num; j++) {
-    auto index = polygonTable[y].back();
-    auto &polygon = polygons[index];
-
     auto &p1 = p[j];
     auto &p2 = p[(j + 1) % num];
 
     auto upperIdx = p1[1] > p2[1] ? j : (j + 1) % num;
-    auto lowerIdx = p1[1] > p2[1] ? (j + 1) % num : j;
 
     auto &upper = p1[1] > p2[1] ? p1 : p2;
     auto &lower = p1[1] > p2[1] ? p2 : p1;
@@ -33,8 +29,8 @@ void Scaner::add(Primitive &primitive) {
       continue;
     }
 
-    ScanEdge edge(i, upper[0], upper[1],
-                  deltaY <= 0 ? 0 : -(float)deltaX / deltaY, deltaY, upperZ);
+    ScanEdge edge {i, upper[0], upper[1],
+                  deltaY <= 0 ? 0 : -static_cast<float>(deltaX) / deltaY, deltaY, upperZ};
 
     if (edge.dy >= 1) {
       auto y = (size_t)upper[1];
@@ -135,7 +131,7 @@ bool Scaner::scan(size_t y) {
       }
 
       if (hasThrough) {
-        for (int x = (int)floor(left); x <= (int)ceil(right); x++) {
+        for (auto x = floor(left); x <= ceil(right); x++) {
           for (auto idx : polygonIndexes) {
             auto &polygon = polygons[idx];
             if (!polygon.isIn) {
@@ -144,7 +140,7 @@ bool Scaner::scan(size_t y) {
             if (polygon.C == 0)
               continue;
             auto z =
-                -(float)(polygon.A * x + polygon.B * y + polygon.D) / polygon.C;
+                -(polygon.A * x + polygon.B * y + polygon.D) / polygon.C;
             zbuffer[x] = max(z, zbuffer[x]);
           }
         }

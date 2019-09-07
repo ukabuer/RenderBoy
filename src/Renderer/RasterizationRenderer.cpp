@@ -59,32 +59,17 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
     auto w2 = w2_row;
 
     const auto sum = w0 + w1 + w2;
-    if (sum == 0) {
-      continue;
-    }
-
     for (p.x = minX; p.x <= maxX; p.x++) {
       // If p is on or inside all edges, render pixel.
-      if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-        auto idx = static_cast<size_t>(p.x + p.y * width);
+      if (w0 >= 0 && w1 >= 0 && w2 >= 0 && sum != 0) {
         const auto z = (w0 * v0.z + w1 * v1.z + w2 * v2.z) / sum;
-
+        const auto idx = static_cast<size_t>(p.x + p.y * width);
         if (-z > frame.zBuffer[idx]) {
           frame.zBuffer[idx] = -z;
-          const auto textureX =
-              (w0 * v0.u + w1 * v1.u + w2 * v2.u) * texture.width / sum;
-          const auto textureY =
-              (w0 * v0.v + w1 * v1.v + w2 * v2.v) * texture.height / sum;
-          const auto channels = texture.channels;
-          auto textureIdx =
-              static_cast<size_t>(
-                (texture.height - textureY) * texture.width + textureX);
-          textureIdx = channels == 4 ? textureIdx * 4 : textureIdx * 3;
-          idx *= 4;
-          frame.colors[idx] = texture.data[textureIdx];
-          frame.colors[idx + 1] = texture.data[textureIdx + 1];
-          frame.colors[idx + 2] = texture.data[textureIdx + 2];
-          frame.colors[idx + 3] = 255.0f;
+          const auto u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
+          const auto v = (w0 * v0.v + w1 * v1.v + w2 * v2.v) / sum;
+          const auto color = texture.getColor(u, 1.0f - v);
+          frame.setColor(idx, color[0], color[1], color[2], color[3]);
         }
       }
 
@@ -110,7 +95,7 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
   const Matrix4f matrix = projectionMatrix * viewMatrix;
 
   vector<array<Point, 3>> primitives;
-  auto offset = 0u;
+  size_t offset = 0;
   for (auto &mesh : meshes) {
     auto &geo = mesh->getGeometry();
 
@@ -141,19 +126,16 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
                       nv[2] / nv[3],
                       uv[0],
                       uv[1],
-                      {
-                          normal[0], normal[1], normal[2],
-                      }};
+                      {normal[0], normal[1], normal[2]}};
         primitive[k] = p;
       }
     }
-
     offset += primitiveNum;
-  }
 
-  auto &textures = meshes[0]->getTextures();
-  for (auto &p : primitives) {
-    drawTriangle(p[0], p[1], p[2], width, height, *textures[0], frame);
+    auto &textures = mesh->getTextures();
+    for (auto &p : primitives) {
+      drawTriangle(p[0], p[1], p[2], width, height, *textures[0], frame);
+    }
   }
 
   return frame;
