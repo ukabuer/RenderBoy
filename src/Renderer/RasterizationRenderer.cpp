@@ -1,7 +1,7 @@
 #include "Renderer/RasterizationRenderer.hpp"
+#include "Primitives.hpp"
 #include <Eigen/Core>
 #include <array>
-#include "Primitives.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -27,8 +27,8 @@ inline int max(int a, int b) { return a > b ? a : b; }
 inline int min(int a, int b) { return a < b ? a : b; }
 
 inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
-                         const Material &material,
-                         int width, int height, Frame &frame) {
+                         const Material &material, int width, int height,
+                         Frame &frame) {
   // Compute triangle bounding box
   auto minX = min3(v0.x, v1.x, v2.x);
   auto minY = min3(v0.y, v1.y, v2.y);
@@ -69,6 +69,9 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
           frame.zBuffer[idx] = p.z;
           p.u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
           p.v = (w0 * v0.v + w1 * v1.v + w2 * v2.v) / sum;
+          p.normals[0] = (w0 * v0.normals[0] + w1 * v1.normals[0] + w2 * v2.normals[0]) / sum;
+          p.normals[1] = (w0 * v0.normals[1] + w1 * v1.normals[1] + w2 * v2.normals[1]) / sum;
+          p.normals[2] = (w0 * v0.normals[2] + w1 * v1.normals[2] + w2 * v2.normals[2]) / sum;
           const auto color = material.getColor(p);
           frame.setColor(idx, color[0], color[1], color[2], color[3]);
         }
@@ -120,13 +123,15 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
         auto &v = useIndices ? vertices[indices[idx + k]] : vertices[idx + k];
         auto &uv =
             useIndices ? texCoords[indices[idx + k]] : texCoords[idx + k];
-        // auto normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
+        auto normal = useIndices ? normals[indices[idx + k]] : normals[idx +
+        k];
         vec4f nv = matrix * vec4f(v[0], v[1], v[2], 1.0);
         const Point p{static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
                       static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),
                       nv[2] / nv[3],
                       uv[0],
-                      uv[1]};
+                      uv[1],
+                      {normal[0], normal[1], normal[2]}};
         primitive[k] = p;
       }
     }
