@@ -27,7 +27,7 @@ Frame ScanLineRenderer::render(const Scene &scene, const Camera &camera) {
   Matrix4f projectionMatrix = camera.getProjectionMatrix();
   Matrix4f matrix = projectionMatrix * viewMatrix;
 
-  vector<Primitive> primitives;
+  vector<ScanPrimitive> primitives;
   for (size_t i = 0; i < meshes.size(); i++) {
     auto &mesh = meshes[i];
     auto &geo = mesh->getGeometry();

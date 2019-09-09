@@ -17,7 +17,7 @@ public:
 
   void setColor(size_t idx, unsigned char r, unsigned char g,
                 unsigned char b, unsigned char a) {
-    idx = idx << 4;
+    idx = idx << 2;
     colors[idx] = r;
     colors[idx + 1] = g;
     colors[idx + 2] = b;

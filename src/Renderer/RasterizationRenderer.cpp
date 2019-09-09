@@ -1,6 +1,7 @@
 #include "Renderer/RasterizationRenderer.hpp"
 #include <Eigen/Core>
 #include <array>
+#include "Primitives.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -26,8 +27,8 @@ inline int max(int a, int b) { return a > b ? a : b; }
 inline int min(int a, int b) { return a < b ? a : b; }
 
 inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
-                         int width, int height, const Texture &texture,
-                         Frame &frame) {
+                         const Material &material,
+                         int width, int height, Frame &frame) {
   // Compute triangle bounding box
   auto minX = min3(v0.x, v1.x, v2.x);
   auto minY = min3(v0.y, v1.y, v2.y);
@@ -62,13 +63,13 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
     for (p.x = minX; p.x <= maxX; p.x++) {
       // If p is on or inside all edges, render pixel.
       if (w0 >= 0 && w1 >= 0 && w2 >= 0 && sum != 0) {
-        const auto z = (w0 * v0.z + w1 * v1.z + w2 * v2.z) / sum;
+        p.z = -(w0 * v0.z + w1 * v1.z + w2 * v2.z) / sum;
         const auto idx = static_cast<size_t>(p.x + p.y * width);
-        if (-z > frame.zBuffer[idx]) {
-          frame.zBuffer[idx] = -z;
-          const auto u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
-          const auto v = (w0 * v0.v + w1 * v1.v + w2 * v2.v) / sum;
-          const auto color = texture.getColor(u, 1.0f - v);
+        if (p.z > frame.zBuffer[idx]) {
+          frame.zBuffer[idx] = p.z;
+          p.u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
+          p.v = (w0 * v0.v + w1 * v1.v + w2 * v2.v) / sum;
+          const auto color = material.getColor(p);
           frame.setColor(idx, color[0], color[1], color[2], color[3]);
         }
       }
@@ -119,22 +120,20 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
         auto &v = useIndices ? vertices[indices[idx + k]] : vertices[idx + k];
         auto &uv =
             useIndices ? texCoords[indices[idx + k]] : texCoords[idx + k];
-        auto normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
+        // auto normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
         vec4f nv = matrix * vec4f(v[0], v[1], v[2], 1.0);
         const Point p{static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
                       static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),
                       nv[2] / nv[3],
                       uv[0],
-                      uv[1],
-                      {normal[0], normal[1], normal[2]}};
+                      uv[1]};
         primitive[k] = p;
       }
     }
     offset += primitiveNum;
 
-    auto &textures = mesh->getTextures();
     for (auto &p : primitives) {
-      drawTriangle(p[0], p[1], p[2], width, height, *textures[0], frame);
+      drawTriangle(p[0], p[1], p[2], mesh->getMaterial(), width, height, frame);
     }
   }
 

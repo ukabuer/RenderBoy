@@ -1,20 +1,20 @@
 #pragma once
 
 #include "Geometry.hpp"
-#include "Material/Texture.hpp"
+#include "Material/Material.hpp"
 #include <memory>
 #include <utility>
 
 class Mesh {
 public:
-  Mesh(std::shared_ptr<Geometry> geo, std::vector<Texture *> textures)
-      : geometry(std::move(geo)), textures(std::move(textures)) {}
+  Mesh(std::shared_ptr<Geometry> geo, std::shared_ptr<Material> material)
+      : geometry(std::move(geo)), material(std::move(material)) {}
 
   const Geometry &getGeometry() const { return *geometry; }
 
-  const std::vector<Texture *> &getTextures() const { return textures; }
-
+  const Material &getMaterial() const { return *material; }
+  
 private:
   std::shared_ptr<Geometry> geometry;
-  std::vector<Texture *> textures;
+  std::shared_ptr<Material> material;
 };

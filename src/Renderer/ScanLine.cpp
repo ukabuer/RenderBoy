@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void Scaner::add(Primitive &primitive) {
+void Scaner::add(ScanPrimitive &primitive) {
   auto y = primitive.maxY >= (int)height ? height - 1 : primitive.maxY;
   auto &coef = primitive.getPlaneCoefficient();
 

@@ -8,5 +8,5 @@ class Model {
 public:
   explicit Model(const std::string &path);
   std::vector<std::shared_ptr<Mesh>> meshes;
-  std::vector<Texture> texturesLoaded;
+  std::vector<std::shared_ptr<Texture>> texturesLoaded;
 };

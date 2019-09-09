@@ -28,7 +28,7 @@ struct ScanPolygon {
   }
 };
 
-struct Primitive {
+struct ScanPrimitive {
   Eigen::Vector3f transformed[3];
   Eigen::Vector2i projected[3];
   Eigen::Vector4f coef; // plane coefficient
@@ -37,7 +37,7 @@ struct Primitive {
   int minY;
   mutable bool isCoefCalculated;
 
-  Primitive()
+  ScanPrimitive()
     : num(0), maxY(0), minY(1000), isCoefCalculated(false) {
   }
 
@@ -83,7 +83,7 @@ struct Primitive {
 };
 
 struct ProcessedMesh {
-  std::vector<Primitive> primitives;
+  std::vector<ScanPrimitive> primitives;
 };
 
 struct Scaner {
@@ -102,6 +102,6 @@ struct Scaner {
     edges.reserve(n * 3);
   }
 
-  void add(Primitive &primitive);
+  void add(ScanPrimitive &primitive);
   bool scan(size_t y);
 };

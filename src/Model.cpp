@@ -1,4 +1,7 @@
 #include "Model.hpp"
+#include "Material/Material.hpp"
+#include "Material/DepthMaterial.hpp"
+#include "Material/PhongMaterial.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -10,39 +13,40 @@
 
 using namespace std;
 
-vector<Texture *> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
-                                       string typeName,
-                                       vector<Texture> &texturesLoaded) {
-  vector<Texture *> textures;
+vector<shared_ptr<Texture>>
+loadMaterialTextures(aiMaterial *mat, aiTextureType type,
+                     string typeName,
+                     vector<shared_ptr<Texture>> &texturesLoaded) {
+  vector<shared_ptr<Texture>> textures;
   for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
     aiString str;
     mat->GetTexture(type, i, &str);
     auto skip = false;
     for (auto &j : texturesLoaded) {
-      if (std::strcmp(j.path.data(), str.C_Str()) == 0) {
-        textures.push_back(&j);
+      if (std::strcmp(j->path.data(), str.C_Str()) == 0) {
+        textures.push_back(j);
         skip = true;
         break;
       }
     }
     if (!skip) {
-      Texture texture;
+      auto texture = make_shared<Texture>();
       int width, height, nrComponents;
-      texture.data = stbi_load(str.C_Str(), &width, &height, &nrComponents, 0);
-      texture.width = width;
-      texture.height = height;
-      texture.channels = nrComponents;
-      texture.type = typeName;
-      texture.path = str.C_Str();
+      texture->data = stbi_load(str.C_Str(), &width, &height, &nrComponents, 0);
+      texture->width = width;
+      texture->height = height;
+      texture->channels = nrComponents;
+      texture->type = typeName;
+      texture->path = str.C_Str();
       texturesLoaded.push_back(texture);
-      textures.push_back(&texturesLoaded.back());
+      textures.push_back(texturesLoaded.back());
     }
   }
   return textures;
 }
 
 unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene,
-                             vector<Texture> &texturesLoaded) {
+                             vector<shared_ptr<Texture>> &texturesLoaded) {
   std::vector<Eigen::Vector3f> vertices;
   std::vector<Eigen::Vector3f> normals;
   std::vector<uint32_t> indices;
@@ -60,11 +64,12 @@ unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene,
     }
   }
 
-  vector<Texture *> diffuseMaps;
+  shared_ptr<Material> material = make_shared<DepthMaterial>();
   if (mesh->mMaterialIndex >= 0) {
-    const auto material = scene->mMaterials[mesh->mMaterialIndex];
-    diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE,
+    const auto mat = scene->mMaterials[mesh->mMaterialIndex];
+    auto diffuseMaps = loadMaterialTextures(mat, aiTextureType_DIFFUSE,
                                        "texture_diffuse", texturesLoaded);
+    material = make_shared<PhongMaterial>(diffuseMaps);
   }
 
   for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
@@ -76,11 +81,12 @@ unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene,
   return make_unique<Mesh>(make_unique<Geometry>(move(vertices), move(indices),
                                                  move(normals),
                                                  move(texCoords)),
-                           move(diffuseMaps));
+                           move(material));
 }
 
 static void findMesh(vector<shared_ptr<Mesh>> &meshes, aiNode *node,
-                     const aiScene *scene, vector<Texture> &texturesLoaded) {
+                     const aiScene *scene,
+                     vector<shared_ptr<Texture>> &texturesLoaded) {
   for (size_t i = 0; i < node->mNumMeshes; i++) {
     const auto mesh = scene->mMeshes[node->mMeshes[i]];
     meshes.push_back(processMesh(mesh, scene, texturesLoaded));
@@ -92,12 +98,12 @@ static void findMesh(vector<shared_ptr<Mesh>> &meshes, aiNode *node,
 }
 
 static void import(vector<shared_ptr<Mesh>> &meshes, const std::string &file,
-                   vector<Texture> &texturesLoaded) {
+                   vector<shared_ptr<Texture>> &texturesLoaded) {
   Assimp::Importer importer;
 
   const auto scene = importer.ReadFile(
       file, aiProcess_CalcTangentSpace | aiProcess_Triangulate |
-                aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+            aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
   if (!scene) {
     cerr << importer.GetErrorString() << endl;

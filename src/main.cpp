@@ -20,7 +20,7 @@ int main(int argc, const char **argv) {
   string path(argv[1]);
   Model model(path);
   auto renderer = make_unique<RasterizationRenderer>();
-  Scene scene;
+  Scene scene {};
   for_each(model.meshes.begin(), model.meshes.end(),
            [&scene](auto &mesh) { scene.add(mesh); });
   PerspectiveCamera camera(45, width, height, 1.0f, 1000.0f);
