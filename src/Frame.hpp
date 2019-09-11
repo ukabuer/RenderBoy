@@ -30,6 +30,10 @@ public:
     this->setColor(idx, r, g, b, a);
   }
 
+  uint32_t getWidth() const { return width; }
+
+  uint32_t getHeight() const { return height; }
+
 private:
   uint32_t width;
   uint32_t height;

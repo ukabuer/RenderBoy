@@ -23,6 +23,8 @@ int main(int argc, const char **argv) {
   Scene scene {};
   for_each(model.meshes.begin(), model.meshes.end(),
            [&scene](auto &mesh) { scene.add(mesh); });
+  auto light = make_shared<PointLight>(array<unsigned char, 4>{255, 255, 255, 0}, Eigen::Vector3f(1, 1, 1));
+  scene.add(light);
   PerspectiveCamera camera(45, width, height, 1.0f, 1000.0f);
   auto radian = 0.0f;
 

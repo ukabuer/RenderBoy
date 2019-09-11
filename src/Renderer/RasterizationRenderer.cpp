@@ -27,8 +27,11 @@ inline int max(int a, int b) { return a > b ? a : b; }
 inline int min(int a, int b) { return a < b ? a : b; }
 
 inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
-                         const Material &material, int width, int height,
-                         Frame &frame) {
+             const Material &material,
+             const std::vector<std::shared_ptr<PointLight>> &lights, Frame &frame) {
+  const auto width = static_cast<int>(frame.getWidth());
+  const auto height = static_cast<int>(frame.getHeight());
+
   // Compute triangle bounding box
   auto minX = min3(v0.x, v1.x, v2.x);
   auto minY = min3(v0.y, v1.y, v2.y);
@@ -72,7 +75,13 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
           p.normals[0] = (w0 * v0.normals[0] + w1 * v1.normals[0] + w2 * v2.normals[0]) / sum;
           p.normals[1] = (w0 * v0.normals[1] + w1 * v1.normals[1] + w2 * v2.normals[1]) / sum;
           p.normals[2] = (w0 * v0.normals[2] + w1 * v1.normals[2] + w2 * v2.normals[2]) / sum;
-          const auto color = material.getColor(p);
+          p.position[0] = (w0 * v0.position[0] + w1 * v1.position[0] +
+                           w2 * v2.position[0]) / sum;
+          p.position[1] = (w0 * v0.position[1] + w1 * v1.position[1] +
+                           w2 * v2.position[1]) / sum;
+          p.position[2] = (w0 * v0.position[2] + w1 * v1.position[2] +
+                           w2 * v2.position[2]) / sum;
+          const auto color = material.getColor(p, lights);
           frame.setColor(idx, color[0], color[1], color[2], color[3]);
         }
       }
@@ -131,14 +140,16 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
                       nv[2] / nv[3],
                       uv[0],
                       uv[1],
-                      {normal[0], normal[1], normal[2]}};
+                      {normal[0], normal[1], normal[2]},
+                      {v[0], v[1], v[2]},
+        };
         primitive[k] = p;
       }
     }
     offset += primitiveNum;
 
     for (auto &p : primitives) {
-      drawTriangle(p[0], p[1], p[2], mesh->getMaterial(), width, height, frame);
+      drawTriangle(p[0], p[1], p[2], mesh->getMaterial(), scene.getLights(), frame);
     }
   }
 
