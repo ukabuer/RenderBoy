@@ -130,10 +130,14 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
 
       for (size_t k = 0; k < 3; k++) {
         auto &v = useIndices ? vertices[indices[idx + k]] : vertices[idx + k];
-        auto &uv =
-            useIndices ? texCoords[indices[idx + k]] : texCoords[idx + k];
-        auto normal = useIndices ? normals[indices[idx + k]] : normals[idx +
-        k];
+        auto uv = Vector2f();
+        if (!texCoords.empty()) {
+          uv = useIndices ? texCoords[indices[idx + k]] : texCoords[idx + k];
+        }
+        auto normal = Vector3f();
+        if (!normals.empty()) {
+          normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
+        }
         vec4f nv = matrix * vec4f(v[0], v[1], v[2], 1.0);
         const Point p{static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
                       static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),

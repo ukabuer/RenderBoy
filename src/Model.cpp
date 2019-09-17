@@ -65,7 +65,7 @@ unique_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene,
   }
 
   shared_ptr<Material> material = make_shared<DepthMaterial>();
-  if (mesh->mMaterialIndex >= 0) {
+  if (mesh->mMaterialIndex > 0) {
     const auto mat = scene->mMaterials[mesh->mMaterialIndex];
     auto diffuseMaps = loadMaterialTextures(mat, aiTextureType_DIFFUSE,
                                        "texture_diffuse", texturesLoaded);
