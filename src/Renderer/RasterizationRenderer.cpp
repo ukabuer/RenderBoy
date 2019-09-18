@@ -1,6 +1,7 @@
 #include "Renderer/RasterizationRenderer.hpp"
 #include "Primitives.hpp"
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <array>
 
 using namespace std;
@@ -28,7 +29,9 @@ inline int min(int a, int b) { return a < b ? a : b; }
 
 inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
              const Material &material,
-             const std::vector<std::shared_ptr<PointLight>> &lights, Frame &frame) {
+             const std::vector<std::shared_ptr<PointLight>> &lights,
+	     const Eigen::Vector3f &view,      
+	Frame &frame) {
   const auto width = static_cast<int>(frame.getWidth());
   const auto height = static_cast<int>(frame.getHeight());
 
@@ -68,6 +71,9 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
       if (w0 >= 0 && w1 >= 0 && w2 >= 0 && sum != 0) {
         p.z = -(w0 * v0.z + w1 * v1.z + w2 * v2.z) / sum;
         const auto idx = static_cast<size_t>(p.x + p.y * width);
+        if (p.z < -1.f || p.z > 1.f) {
+          continue;
+        }
         if (p.z > frame.zBuffer[idx]) {
           frame.zBuffer[idx] = p.z;
           p.u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
@@ -81,8 +87,8 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
                            w2 * v2.position[1]) / sum;
           p.position[2] = (w0 * v0.position[2] + w1 * v1.position[2] +
                            w2 * v2.position[2]) / sum;
-          const auto color = material.getColor(p, lights);
-          frame.setColor(idx, color[0], color[1], color[2], color[3]);
+          const auto color = material.getColor(p, lights, view);
+          frame.setColor(idx, color);
         }
       }
 
@@ -102,6 +108,10 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
   const auto height = camera.getHeight();
 
   Frame frame(width, height);
+  const Vector3f background(0.4f, 0.4f, 0.4f);
+  for (auto i = 0ul; i < frame.zBuffer.size(); i++) {
+    frame.setColor(i, background);
+  }
 
   const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
   const Matrix4f projectionMatrix = camera.getProjectionMatrix();
@@ -130,11 +140,11 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
 
       for (size_t k = 0; k < 3; k++) {
         auto &v = useIndices ? vertices[indices[idx + k]] : vertices[idx + k];
-        auto uv = Vector2f();
+        auto uv = Vector2f(0.0f, 0.0f);
         if (!texCoords.empty()) {
           uv = useIndices ? texCoords[indices[idx + k]] : texCoords[idx + k];
         }
-        auto normal = Vector3f();
+        auto normal = Vector3f(0.0f, 0.0f, 0.0f);
         if (!normals.empty()) {
           normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
         }
@@ -153,7 +163,8 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
     offset += primitiveNum;
 
     for (auto &p : primitives) {
-      drawTriangle(p[0], p[1], p[2], mesh->getMaterial(), scene.getLights(), frame);
+      drawTriangle(p[0], p[1], p[2], mesh->getMaterial(),
+                   scene.getPointLights(), camera.getPosition(), frame);
     }
   }
 

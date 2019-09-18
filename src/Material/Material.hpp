@@ -1,13 +1,16 @@
 #pragma once
 
-#include "Primitives.hpp"
 #include "Light/PointLight.hpp"
+#include "Primitives.hpp"
 
 class Material {
 public:
-  virtual std::array<unsigned char, 4>
+  Material() = default;
+
+  virtual Eigen::Vector3f
   getColor(const Point &point,
-           const std::vector<std::shared_ptr<PointLight>> &lights) const = 0;
+           const std::vector<std::shared_ptr<PointLight>> &lights,
+	  const Eigen::Vector3f &view) const = 0;
 
   virtual ~Material() = default;
 };

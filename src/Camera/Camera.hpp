@@ -6,17 +6,20 @@
 class Camera {
 public:
   Camera(uint32_t w, uint32_t h);
- 
+
   virtual ~Camera() = default;
 
   const Eigen::Vector3f &getPosition() const { return this->position; }
   void setPosition(float x, float y, float z);
+  void setPosition(const Eigen::Vector3f &v);
 
   const Eigen::Vector3f &getUp() const { return this->up; }
   void setUp(float x, float y, float z);
+  void setUp(const Eigen::Vector3f &v);
 
   const Eigen::Vector3f &getTarget() const { return this->target; }
   void setTarget(float x, float y, float z);
+  void setTarget(const Eigen::Vector3f &v);
 
   uint32_t getWidth() const { return this->width; }
   void setWidth(uint32_t w);

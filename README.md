@@ -1,9 +1,10 @@
 # RenderBoy
-A scalable CPU rendering engine.
+(To be) A scalable CPU rendering engine.
 
 ## TODO
-- [ ] support image texture
-- [ ] support parallelization
-- [ ] path tracing
-- [ ] MPI based distributed rendering
+- [ ] light
 - [ ] material system
+- [ ] parallelization
+- [ ] path tracing
+- [ ] PBR
+- [ ] MPI based distributed rendering

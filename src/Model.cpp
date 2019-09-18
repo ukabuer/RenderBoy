@@ -5,7 +5,6 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include "Color.hpp"
 #include <iostream>
 #include <stb_image.h>
 #include <string>
@@ -15,11 +14,11 @@
 using namespace std;
 using namespace Eigen;
 
-static shared_ptr<Texture>
-loadTexture(const string &path, const string &baseDir,
-            vector<shared_ptr<Texture>> &textures) {
+static shared_ptr<Texture> loadTexture(const string &path,
+                                       const string &baseDir,
+                                       vector<shared_ptr<Texture>> &textures) {
   int width, height, channels;
-  const auto filepath = path + "/" + baseDir;
+  const auto filepath = baseDir + "/" + path;
 
   for (auto &texture : textures) {
     if (texture->path == filepath) {
@@ -27,7 +26,14 @@ loadTexture(const string &path, const string &baseDir,
     }
   }
 
-  const auto data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+  // const auto data = stbi_loadf(filepath.c_str(), &width, &height, &channels, 0);
+  const auto udata = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+  const auto total = width * height * channels;
+  float *data = new float[total];
+
+  for (size_t i = 0; i < total; i++) {
+    data[i] = static_cast<float>(udata[i]) / 255.0f;
+  }
 
   if (data == nullptr) {
     throw "Load texture error, file: " + filepath;
@@ -52,15 +58,15 @@ static unique_ptr<Material> loadMaterial(const aiMaterial &ai_material,
 
   aiColor3D diffuse;
   ai_material.Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
-  material->diffuseColor = Color::from(diffuse.r, diffuse.g, diffuse.b);
+  material->diffuseColor = {diffuse.r, diffuse.g, diffuse.b};
 
   aiColor3D specular;
   ai_material.Get(AI_MATKEY_COLOR_SPECULAR, specular);
-  material->specularColor = Color::from(specular.r, specular.g, specular.b);
+  material->specularColor = {specular.r, specular.g, specular.b};
 
   aiColor3D ambient;
   ai_material.Get(AI_MATKEY_COLOR_AMBIENT, ambient);
-  material->specularColor = Color::from(ambient.r, ambient.g, ambient.b);
+  material->ambientColor = {ambient.r, ambient.g, ambient.b};
 
   aiString path;
 
@@ -68,14 +74,14 @@ static unique_ptr<Material> loadMaterial(const aiMaterial &ai_material,
       ai_material.GetTextureCount(aiTextureType_DIFFUSE) > 0;
   if (hasDiffuseMap) {
     ai_material.GetTexture(aiTextureType_DIFFUSE, 0, &path);
-    shared_ptr<Texture> diffuseMap = loadTexture(path.C_Str(), baseDir, textures);
+    material->diffuseMap = loadTexture(path.C_Str(), baseDir, textures);
   }
 
   const auto hasSpecularMap =
       ai_material.GetTextureCount(aiTextureType_SPECULAR) > 0;
   if (hasSpecularMap) {
     ai_material.GetTexture(aiTextureType_SPECULAR, 0, &path);
-    shared_ptr<Texture> specularMap =
+    material->specularMap =
         loadTexture(path.C_Str(), baseDir, textures);
   }
 
@@ -83,8 +89,13 @@ static unique_ptr<Material> loadMaterial(const aiMaterial &ai_material,
       ai_material.GetTextureCount(aiTextureType_AMBIENT) > 0;
   if (hasAmbientMap) {
     ai_material.GetTexture(aiTextureType_AMBIENT, 0, &path);
-    shared_ptr<Texture> ambientMap =
+    material->ambientMap =
         loadTexture(path.C_Str(), baseDir, textures);
+  }
+
+  ai_material.Get(AI_MATKEY_SHININESS, material->shininess);
+  if (material->shininess == 0.f) {
+    material->shininess = 50.f;
   }
 
   return material;
@@ -127,8 +138,9 @@ loadMesh(const aiMesh &ai_mesh, const vector<shared_ptr<Material>> &materials) {
     }
   }
 
-  auto material = materials.empty() ? make_shared<DepthMaterial>()
-                                    : materials[ai_mesh.mMaterialIndex];
+  auto material = materials.empty() || !ai_mesh.HasNormals()
+                      ? make_shared<DepthMaterial>()
+                      : materials[ai_mesh.mMaterialIndex];
   auto geometry = make_unique<Geometry>(move(vertices), move(indices),
                                         move(normals), move(texCoords));
   return make_unique<Mesh>(move(geometry), material);

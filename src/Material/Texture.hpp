@@ -1,27 +1,33 @@
 #pragma once
 
-#include <array>
+#include <Eigen/Core>
+#include <algorithm>
 #include <string>
 
 struct Texture {
-  unsigned char *data = nullptr;
+  float *data = nullptr;
   size_t width = 0;
   size_t height = 0;
   size_t channels = 3;
   std::string type;
   std::string path;
 
-  std::array<unsigned char, 4> getColor(float u, float v) const {
-    std::array<unsigned char, 4> color = {0, 0, 0, 0 };
+  Eigen::Vector3f getColor(float u, float v) const {
+    u = std::max(std::min(u, 1.f), 0.f);
+    v = std::max(std::min(v, 1.f), 0.f);
 
-    auto idx = static_cast<size_t>(u * width) + static_cast<size_t>(v * height) * width;
+    auto idx = static_cast<size_t>(u * (width - 1)) +
+               static_cast<size_t>(v * (height - 1)) * width;
     idx = channels == 4 ? idx << 2 : idx * 3;
 
-    color[0] = data[idx];
-    color[1] = data[idx + 1];
-    color[2] = data[idx + 2];
-    color[3] = channels == 4 ? data[idx + 3] : 255;
+    return Eigen::Vector3f{data[idx], data[idx + 1], data[idx + 2]};
+  }
 
-    return color;
+  ~Texture() {
+    if (data == nullptr) {
+      return;
+    }
+
+    delete data;
   }
 };

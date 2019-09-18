@@ -5,29 +5,25 @@
 
 class Frame {
 public:
-  std::vector<unsigned char> colors;
+  std::vector<float> colors;
   std::vector<float> zBuffer;
   uint32_t size;
 
   Frame(uint32_t width, uint32_t height)
-    : colors(width * height * 4, 0), zBuffer(width * height, -FLT_MAX),
-      size(width * height),
-      width(width), height(height) {
-  }
+      : colors(width * height * 4, 0.0f), zBuffer(width * height, -FLT_MAX),
+        size(width * height), width(width), height(height) {}
 
-  void setColor(size_t idx, unsigned char r, unsigned char g,
-                unsigned char b, unsigned char a) {
+  void setColor(size_t idx, const Eigen::Vector3f &color) {
     idx = idx << 2;
-    colors[idx] = r;
-    colors[idx + 1] = g;
-    colors[idx + 2] = b;
-    colors[idx + 3] = a;
+    colors[idx] = color[0];
+    colors[idx + 1] = color[1];
+    colors[idx + 2] = color[2];
+    colors[idx + 3] = 1.0f;
   }
 
-  void setColor(uint32_t x, uint32_t y, unsigned char r, unsigned char g,
-                unsigned char b, unsigned char a) {
+  void setColor(uint32_t x, uint32_t y, const Eigen::Vector3f &color) {
     const auto idx = static_cast<size_t>(x + y * width);
-    this->setColor(idx, r, g, b, a);
+    this->setColor(idx, color);
   }
 
   uint32_t getWidth() const { return width; }

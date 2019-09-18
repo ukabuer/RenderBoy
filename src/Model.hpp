@@ -5,8 +5,7 @@
 #include <memory>
 #include <string>
 
-class Model {
-public:
+struct Model {
   explicit Model(const std::string &path);
 
   std::string baseDir;

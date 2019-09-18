@@ -5,11 +5,12 @@
 #include <array>
 
 class DepthMaterial : public Material {
-  std::array<unsigned char, 4> getColor(
-      const Point &point,
-      const std::vector<std::shared_ptr<PointLight>> &lights) const override {
-    const auto gray = static_cast<unsigned char>((point.z + 1.0f) / 2 * 255.0f);
+  Eigen::Vector3f
+  getColor(const Point &point,
+           const std::vector<std::shared_ptr<PointLight>> &lights,
+           const Eigen::Vector3f &view) const override {
+    const auto gray = (point.z + 1.0f) / 2.0f;
 
-    return std::array<unsigned char, 4>{gray, gray, gray, 255};
+    return Eigen::Vector3f{gray, gray, gray};
   }
 };

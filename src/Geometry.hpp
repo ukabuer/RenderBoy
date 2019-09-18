@@ -5,11 +5,15 @@
 #include <vector>
 
 class Mesh;
+struct Model;
 
 class Geometry {
   friend class Mesh;
+  friend struct Model;
 
 public:
+  Geometry() = default;
+
   explicit Geometry(std::vector<Eigen::Vector3f> v);
 
   Geometry(std::vector<Eigen::Vector3f> v, std::vector<uint32_t> indices);

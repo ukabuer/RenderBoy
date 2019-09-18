@@ -1,6 +1,8 @@
 #pragma once
 #include "Camera.hpp"
 
+const auto PI = atan(1.0f) * 4.0f;
+
 class PerspectiveCamera : public Camera {
 public:
   PerspectiveCamera(float fov, uint32_t width, uint32_t height, float near,

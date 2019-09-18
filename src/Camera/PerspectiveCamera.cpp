@@ -1,5 +1,6 @@
 #include "Camera/PerspectiveCamera.hpp"
 #include <Eigen/Dense>
+#include <cmath>
 
 using namespace std;
 using namespace Eigen;
@@ -8,7 +9,7 @@ static Matrix4f calculateProjectionMatrix(float fov, float aspect, float zNear,
                                           float zFar) {
   Matrix4f result = Matrix4f::Zero();
 
-  const auto radf = fov;
+  const auto radf = fov * PI / 180.f;
   const auto tanHalfFovy = tan(radf / 2.0f);
 
   result(0, 0) = 1.0f / (aspect * tanHalfFovy);

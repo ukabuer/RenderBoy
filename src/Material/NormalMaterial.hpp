@@ -2,19 +2,16 @@
 
 #include "Material/Material.hpp"
 #include "Primitives.hpp"
-#include <array>
 #include <vector>
 
 class NormalMaterial : public Material {
-  std::array<unsigned char, 4> getColor(
-      const Point &point,
-      const std::vector<std::shared_ptr<PointLight>> &lights) const override {
-    std::array<unsigned char, 4> color = {0, 0, 0, 255};
-
-    color[0] = static_cast<unsigned char>((point.normals[0] + 1.0f) / 2 * 255);
-    color[1] = static_cast<unsigned char>((point.normals[1] + 1.0f) / 2 * 255);
-    color[2] = static_cast<unsigned char>((point.normals[2] + 1.0f) / 2 * 255);
-
-    return color;
+public:
+  Eigen::Vector3f
+  getColor(const Point &point,
+           const std::vector<std::shared_ptr<PointLight>> &lights,
+           const Eigen::Vector3f &view) const override {
+    return Eigen::Vector3f{(point.normals[0] + 1.0f) / 2.0f,
+                           (point.normals[1] + 1.0f) / 2.0f,
+                           (point.normals[2] + 1.0f) / 2.0f};
   }
 };

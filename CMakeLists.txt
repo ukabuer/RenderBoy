@@ -32,9 +32,9 @@ target_sources(RenderBoy
     src/Geometry.cpp
     src/Camera/Camera.cpp
     src/Camera/PerspectiveCamera.cpp
-    src/Renderer/ScanLineRenderer.cpp
+    # src/Renderer/ScanLine.cpp
+    # src/Renderer/ScanLineRenderer.cpp
     src/Renderer/RasterizationRenderer.cpp
-    src/Renderer/ScanLine.cpp
     src/Model.cpp
 )
 target_link_libraries(RenderBoy

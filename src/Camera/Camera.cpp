@@ -33,6 +33,16 @@ void Camera::setPosition(float x, float y, float z) {
   this->viewChanged = true;
 }
 
+void Camera::setPosition(const Eigen::Vector3f &v) {
+  if (v[0] == this->position[0] && v[1] == this->position[1] &&
+      v[2] == this->position[2]) {
+    return;
+  }
+
+  this->position << v;
+  this->viewChanged = true;
+}
+
 void Camera::setUp(float x, float y, float z) {
   if (x == this->up[0] && y == this->up[1] && z == this->up[2]) {
     return;
@@ -42,12 +52,31 @@ void Camera::setUp(float x, float y, float z) {
   this->viewChanged = true;
  }
 
+void Camera::setUp(const Eigen::Vector3f &v) {
+   if (v[0] == this->up[0] && v[1] == this->up[1] &&
+       v[2] == this->up[2]) {
+     return;
+   }
+
+   this->up = v;
+   this->viewChanged = true;
+ }
+
 void Camera::setTarget(float x, float y, float z) {
    if (x == this->target[0] && y == this->target[1] && z == this->target[2]) {
      return;
    }
 
    this->target << x, y, z;
+   this->viewChanged = true;
+ }
+
+void Camera::setTarget(const Eigen::Vector3f &v) {
+   if (v[0] == this->target[0] && v[1] == this->target[1] && v[2] == this->target[2]) {
+     return;
+   }
+
+   this->target = v;
    this->viewChanged = true;
  }
 

@@ -1,7 +1,7 @@
 #include "Camera/OrbitControl.hpp"
 #include "Camera/PerspectiveCamera.hpp"
-#include "Model.hpp"
 #include "Light/PointLight.hpp"
+#include "Model.hpp"
 #include "Renderer/RasterizationRenderer.hpp"
 #include "SFML/Graphics.hpp"
 #include <chrono>
@@ -28,8 +28,8 @@ int main(int argc, const char **argv) {
   }
 
   auto light = make_shared<PointLight>();
-  light->setColor(255, 255, 255, 0);
-  light->setPosition(1, 1, 1);
+  light->color = {1.0f, 1.0f, 1.0f};
+  light->position = {1.0f, 1.0f, 1.0f};
   scene.add(light);
 
   PerspectiveCamera camera(60, width, height, 0.1f, 100.f);
@@ -98,9 +98,12 @@ int main(int argc, const char **argv) {
         auto offset2 = j + i * width;
         offset1 *= 4;
         offset2 *= 4;
-        pixels[offset1] = frame.colors[offset2];
-        pixels[offset1 + 1] = frame.colors[offset2 + 1];
-        pixels[offset1 + 2] = frame.colors[offset2 + 2];
+        pixels[offset1] =
+            static_cast<unsigned char>(frame.colors[offset2] * 255.0f);
+        pixels[offset1 + 1] =
+            static_cast<unsigned char>(frame.colors[offset2 + 1] * 255.0f);
+        pixels[offset1 + 2] =
+            static_cast<unsigned char>(frame.colors[offset2 + 2] * 255.0f);
         pixels[offset1 + 3] = 255;
       }
     }
