@@ -3,26 +3,6 @@
 using namespace std;
 using namespace Eigen;
 
-Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i) {
-  this->vertices = move(v);
-  this->indices = move(i);
-}
-
-Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i, vector<Vector3f> n) {
-  this->vertices = move(v);
-  this->indices = move(i);
-  this->normals = move(n);
-}
-
-Geometry::Geometry(vector<Vector3f> v, vector<uint32_t> i, vector<Vector3f> n, vector<Vector2f> uv) {
-  this->vertices = move(v);
-  this->indices = move(i);
-  this->normals = move(n);
-  this->texCoords = move(uv);
-}
-
-Geometry::Geometry(vector<Vector3f> v) { this->vertices = move(v); }
-
 unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {
   using vec3 = Vector3f;
   const auto hw = w / 2, hh = h / 2, hd = d / 2;
@@ -35,5 +15,9 @@ unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {
       0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 4, 1, 0, 4, 0, 5,
       6, 3, 2, 6, 2, 7, 1, 4, 7, 1, 7, 2, 5, 0, 3, 5, 3, 6,
   };
-  return make_unique<Geometry>(move(vertices), move(indices));
+
+  auto geometry = make_unique<Geometry>();
+  geometry->vertices = move(vertices);
+  geometry->indices = move(indices);
+  return geometry;
 }

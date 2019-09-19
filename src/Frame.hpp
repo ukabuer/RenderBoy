@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Core>
 #include <cfloat>
 #include <cstdint>
 #include <vector>

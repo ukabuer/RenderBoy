@@ -26,15 +26,11 @@ static shared_ptr<Texture> loadTexture(const string &path,
     }
   }
 
-  // const auto data = stbi_loadf(filepath.c_str(), &width, &height, &channels, 0);
-  const auto udata = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
-  const auto total = width * height * channels;
-  float *data = new float[total];
-
-  for (size_t i = 0; i < total; i++) {
-    data[i] = static_cast<float>(udata[i]) / 255.0f;
-  }
-
+  stbi_set_flip_vertically_on_load(1);
+  stbi_ldr_to_hdr_scale(1.0f);
+  stbi_ldr_to_hdr_gamma(1.0f);
+  const auto data = stbi_loadf(filepath.c_str(), &width, &height, &channels, 0);
+  
   if (data == nullptr) {
     throw "Load texture error, file: " + filepath;
   }
@@ -141,17 +137,25 @@ loadMesh(const aiMesh &ai_mesh, const vector<shared_ptr<Material>> &materials) {
   auto material = materials.empty() || !ai_mesh.HasNormals()
                       ? make_shared<DepthMaterial>()
                       : materials[ai_mesh.mMaterialIndex];
-  auto geometry = make_unique<Geometry>(move(vertices), move(indices),
-                                        move(normals), move(texCoords));
-  return make_unique<Mesh>(move(geometry), material);
+  auto geometry = make_unique<Geometry>();
+  geometry->vertices = move(vertices);
+  geometry->indices = move(indices);
+  geometry->normals = move(normals);
+  geometry->texCoords = move(texCoords);
+
+  auto mesh = make_unique<Mesh>();
+  mesh->geometry = move(geometry);
+  mesh->material = material;
+  return mesh;
 }
 
-Model::Model(const string &filepath) {
+Model Model::Load(const string &filepath) {
+  Model model;
   const auto lastSlash = filepath.find_last_of("/\\");
   if (lastSlash == std::string::npos) {
-    this->baseDir = "";
+    model.baseDir = "";
   } else {
-    this->baseDir = filepath.substr(0, lastSlash);
+    model.baseDir = filepath.substr(0, lastSlash);
   }
 
   Assimp::Importer importer;
@@ -162,21 +166,23 @@ Model::Model(const string &filepath) {
 
   if (!scene) {
     cerr << importer.GetErrorString() << endl;
-    return;
+    return model;
   }
 
   if (scene->HasMaterials()) {
     for (auto i = 0u; i < scene->mNumMaterials; i++) {
       shared_ptr<Material> material =
-          loadMaterial(*scene->mMaterials[i], textures, baseDir);
-      materials.emplace_back(material);
+          loadMaterial(*scene->mMaterials[i], model.textures, model.baseDir);
+      model.materials.emplace_back(material);
     }
   }
 
   if (scene->HasMeshes()) {
     for (auto i = 0u; i < scene->mNumMeshes; i++) {
-      shared_ptr<Mesh> mesh = loadMesh(*scene->mMeshes[i], materials);
-      meshes.emplace_back(mesh);
+      shared_ptr<Mesh> mesh = loadMesh(*scene->mMeshes[i], model.materials);
+      model.meshes.emplace_back(mesh);
     }
   }
+
+  return model;
 }

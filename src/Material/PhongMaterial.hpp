@@ -30,14 +30,14 @@ public:
 
       Eigen::Vector3f diffuse(0.0f, 0.0f, 0.0f);
       Eigen::Vector3f specular(0.0f, 0.0f, 0.0f);
-      Eigen::Vector3f ambient = ambientColor * 0.1f;
+      Eigen::Vector3f ambient = ambientColor * 0.5f;
 
       auto diffuseFactor = N.dot(L);
       if (diffuseFactor > 0.f) {
         if (diffuseMap == nullptr) {
           diffuse = diffuseFactor * diffuseColor.cwiseProduct(lightColor);
         } else {
-          const auto color = diffuseMap->getColor(point.u, 1.0f - point.v);
+          const auto color = diffuseMap->getColor(point.u, point.v);
           diffuse = diffuseFactor * color.cwiseProduct(lightColor);
         }
       }

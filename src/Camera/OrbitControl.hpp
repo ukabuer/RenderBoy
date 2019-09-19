@@ -2,7 +2,7 @@
 
 #include "Camera/PerspectiveCamera.hpp"
 
-constexpr inline float clamp(float f, float min, float max) noexcept {
+constexpr float clamp(float f, float min, float max) noexcept {
   return f < min ? min : (f > max ? max : f);
 }
 
@@ -21,13 +21,12 @@ inline Eigen::Vector3f calculatePan(const PerspectiveCamera &camera,
   return delta_x + delta_y;
 }
 
-inline Eigen::Vector3f calculateMove(const PerspectiveCamera &camera,
-                                     const Eigen::Vector3f &translate,
+inline Eigen::Vector3f calculateMove(const Eigen::Vector3f &translate,
                                      const float orbitDelta[],
                                      float zoomDelta) {
   float radius = translate.norm();
-  auto theta = atan2(translate[0], translate[2]);             /* azimuth */
-  auto phi = acos(translate[1] / radius); /* polar */
+  auto theta = atan2(translate[0], translate[2]); /* azimuth */
+  auto phi = acos(translate[1] / radius);         /* polar */
   const auto factor = PI * 0.1f;
   const auto EPSILON = 1e-5f;
   Eigen::Vector3f offset;
@@ -91,8 +90,7 @@ public:
     const Eigen::Vector3f fromCamera = -fromTarget;
 
     const auto pan = calculatePan(camera, fromCamera, panDelta);
-    const auto offset =
-        calculateMove(camera, fromTarget, orbitDelta, zoomDelta);
+    const auto offset = calculateMove(fromTarget, orbitDelta, zoomDelta);
 
     camera.setTarget(camera.getTarget() + pan);
     camera.setPosition(camera.getTarget() + offset);

@@ -3,7 +3,8 @@
 #include "Light/PointLight.hpp"
 #include "Model.hpp"
 #include "Renderer/RasterizationRenderer.hpp"
-#include "SFML/Graphics.hpp"
+#include "utils.hpp"
+#include <SFML/Graphics.hpp>
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -11,41 +12,31 @@
 using namespace std;
 
 int main(int argc, const char **argv) {
-  const auto width = 800u;
-  const auto height = 600u;
-
   if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " /path/to/model/file" << endl;
+    cerr << "Usage: " << argv[0] << " /path/to/config/file" << endl;
     return 1;
   }
 
-  string path(argv[1]);
-  Model model(path);
+  auto config = load_config(argv[1]);
+  shared_ptr<Camera> camera = move(config.first);
+  auto &scene = *(config.second);
   auto renderer = RasterizationRenderer();
-  Scene scene{};
-  for (auto &mesh : model.meshes) {
-    scene.add(mesh);
-  }
-
-  auto light = make_shared<PointLight>();
-  light->color = {1.0f, 1.0f, 1.0f};
-  light->position = {1.0f, 1.0f, 1.0f};
-  scene.add(light);
-
-  PerspectiveCamera camera(60, width, height, 0.1f, 100.f);
-  camera.setPosition(0.0f, 0.0f, 3.0f);
-
-  auto controller = OrbitController(camera);
+  auto controller =
+      OrbitController(*dynamic_pointer_cast<PerspectiveCamera>(camera));
 
   // display
+  const auto width = camera->getWidth();
+  const auto height = camera->getHeight();
   sf::RenderWindow window(sf::VideoMode(width, height), "RenderBoy");
   sf::Texture texture;
   texture.create(width, height);
   sf::Sprite sprite;
   sprite.setTexture(texture);
+  sprite.setOrigin({0, sprite.getLocalBounds().height});
+  sprite.setScale(1, -1);
   vector<sf::Uint8> pixels(width * height * 4, 255);
   while (window.isOpen()) {
-    sf::Event event{};
+    auto event = sf::Event();
     while (window.pollEvent(event)) {
       const auto scrollDelta = event.mouseWheelScroll.delta;
       const auto mouse = sf::Mouse::getPosition(window);
@@ -86,27 +77,17 @@ int main(int argc, const char **argv) {
 
     auto start = chrono::steady_clock::now();
 
-    auto frame = renderer.render(scene, camera);
+    // render
+    auto frame = renderer.render(scene, *camera);
+
+    for (auto i = 0; i < frame.colors.size(); i++) {
+      pixels[i] = static_cast<unsigned char>(frame.colors[i] * 255.0f);
+    }
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(
         chrono::steady_clock::now() - start);
     cout << "\r" << to_string(delta.count()) + " ms";
 
-    for (auto i = 0; i < height; i++) {
-      for (auto j = 0; j < width; j++) {
-        auto offset1 = j + (height - i - 1) * width;
-        auto offset2 = j + i * width;
-        offset1 *= 4;
-        offset2 *= 4;
-        pixels[offset1] =
-            static_cast<unsigned char>(frame.colors[offset2] * 255.0f);
-        pixels[offset1 + 1] =
-            static_cast<unsigned char>(frame.colors[offset2 + 1] * 255.0f);
-        pixels[offset1 + 2] =
-            static_cast<unsigned char>(frame.colors[offset2 + 2] * 255.0f);
-        pixels[offset1 + 3] = 255;
-      }
-    }
     texture.update(pixels.data());
 
     window.draw(sprite);

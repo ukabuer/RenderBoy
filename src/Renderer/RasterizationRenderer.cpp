@@ -23,15 +23,10 @@ inline int min3(int a, int b, int c) {
   return c < tmp ? c : tmp;
 }
 
-inline int max(int a, int b) { return a > b ? a : b; }
-
-inline int min(int a, int b) { return a < b ? a : b; }
-
 inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
-             const Material &material,
-             const std::vector<std::shared_ptr<PointLight>> &lights,
-	     const Eigen::Vector3f &view,      
-	Frame &frame) {
+                         const Material &material,
+                         const std::vector<std::shared_ptr<PointLight>> &lights,
+                         const Eigen::Vector3f &view, Frame &frame) {
   const auto width = static_cast<int>(frame.getWidth());
   const auto height = static_cast<int>(frame.getHeight());
 
@@ -78,15 +73,24 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
           frame.zBuffer[idx] = p.z;
           p.u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
           p.v = (w0 * v0.v + w1 * v1.v + w2 * v2.v) / sum;
-          p.normals[0] = (w0 * v0.normals[0] + w1 * v1.normals[0] + w2 * v2.normals[0]) / sum;
-          p.normals[1] = (w0 * v0.normals[1] + w1 * v1.normals[1] + w2 * v2.normals[1]) / sum;
-          p.normals[2] = (w0 * v0.normals[2] + w1 * v1.normals[2] + w2 * v2.normals[2]) / sum;
+          p.normals[0] =
+              (w0 * v0.normals[0] + w1 * v1.normals[0] + w2 * v2.normals[0]) /
+              sum;
+          p.normals[1] =
+              (w0 * v0.normals[1] + w1 * v1.normals[1] + w2 * v2.normals[1]) /
+              sum;
+          p.normals[2] =
+              (w0 * v0.normals[2] + w1 * v1.normals[2] + w2 * v2.normals[2]) /
+              sum;
           p.position[0] = (w0 * v0.position[0] + w1 * v1.position[0] +
-                           w2 * v2.position[0]) / sum;
+                           w2 * v2.position[0]) /
+                          sum;
           p.position[1] = (w0 * v0.position[1] + w1 * v1.position[1] +
-                           w2 * v2.position[1]) / sum;
+                           w2 * v2.position[1]) /
+                          sum;
           p.position[2] = (w0 * v0.position[2] + w1 * v1.position[2] +
-                           w2 * v2.position[2]) / sum;
+                           w2 * v2.position[2]) /
+                          sum;
           const auto color = material.getColor(p, lights, view);
           frame.setColor(idx, color);
         }
@@ -103,7 +107,7 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
 }
 
 Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
-  auto meshes = scene.getMeshes();
+  auto &meshes = scene.meshes;
   const auto width = camera.getWidth();
   const auto height = camera.getHeight();
 
@@ -120,12 +124,12 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
   vector<array<Point, 3>> primitives;
   size_t offset = 0;
   for (auto &mesh : meshes) {
-    auto &geo = mesh->getGeometry();
+    auto &geo = mesh->geometry;
 
-    auto &indices = geo.getIndices();
-    auto &vertices = geo.getVertices();
-    auto &texCoords = geo.getTexCoords();
-    auto &normals = geo.getNormals();
+    auto &indices = geo->indices;
+    auto &vertices = geo->vertices;
+    auto &texCoords = geo->texCoords;
+    auto &normals = geo->normals;
 
     const auto useIndices = !indices.empty();
     const auto vertexNum = useIndices ? indices.size() : vertices.size();
@@ -149,13 +153,14 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
           normal = useIndices ? normals[indices[idx + k]] : normals[idx + k];
         }
         vec4f nv = matrix * vec4f(v[0], v[1], v[2], 1.0);
-        const Point p{static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
-                      static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),
-                      nv[2] / nv[3],
-                      uv[0],
-                      uv[1],
-                      {normal[0], normal[1], normal[2]},
-                      {v[0], v[1], v[2]},
+        const Point p{
+            static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
+            static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),
+            nv[2] / nv[3],
+            uv[0],
+            uv[1],
+            {normal[0], normal[1], normal[2]},
+            {v[0], v[1], v[2]},
         };
         primitive[k] = p;
       }
@@ -163,8 +168,8 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
     offset += primitiveNum;
 
     for (auto &p : primitives) {
-      drawTriangle(p[0], p[1], p[2], mesh->getMaterial(),
-                   scene.getPointLights(), camera.getPosition(), frame);
+      drawTriangle(p[0], p[1], p[2], *mesh->material,
+                   scene.pointLights, camera.getPosition(), frame);
     }
   }
 
