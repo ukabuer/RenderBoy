@@ -1,7 +1,5 @@
 #pragma once
-#include "Camera.hpp"
-
-const auto PI = atan(1.0f) * 4.0f;
+#include "Camera/Camera.hpp"
 
 class PerspectiveCamera : public Camera {
 public:

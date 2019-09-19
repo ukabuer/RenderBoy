@@ -1,6 +1,6 @@
 #pragma once
-
 #include "Camera/PerspectiveCamera.hpp"
+#include "Geometry.hpp"
 
 constexpr float clamp(float f, float min, float max) noexcept {
   return f < min ? min : (f > max ? max : f);

@@ -1,4 +1,5 @@
 #include "Camera/PerspectiveCamera.hpp"
+#include "Geometry.hpp"
 #include <Eigen/Dense>
 #include <cmath>
 
