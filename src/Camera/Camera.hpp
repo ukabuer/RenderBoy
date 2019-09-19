@@ -1,10 +1,12 @@
 #pragma once
-
+#include "Frame.hpp"
 #include <Eigen/Core>
 #include <cstdint>
 
 class Camera {
 public:
+  Frame frame;
+
   Camera(uint32_t w, uint32_t h);
 
   virtual ~Camera() = default;

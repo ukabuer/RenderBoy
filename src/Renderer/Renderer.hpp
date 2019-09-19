@@ -8,5 +8,5 @@ class Renderer {
 public:
   virtual ~Renderer() = default;
 
-  virtual Frame render(const Scene &scene, const Camera &camera) = 0;
+  virtual void render(const Scene &scene, Camera &camera) = 0;
 };

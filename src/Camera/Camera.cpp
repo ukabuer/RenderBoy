@@ -17,7 +17,7 @@ static Matrix4f calculateViewMatrix(const Vector3f &pos,
 
 Camera::Camera(uint32_t w, uint32_t h)
       : width(w), height(h), position(0, 0, 1), target(0, 0, 0), up(0, 1, 0),
-        viewChanged(false), projectionChanged(false) {
+        viewChanged(false), projectionChanged(false), frame(w, h) {
         this->viewMatrix =
             calculateViewMatrix(this->position, this->target, this->up);
 

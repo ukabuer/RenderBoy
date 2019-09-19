@@ -4,5 +4,5 @@
 
 class RasterizationRenderer final : public Renderer {
 public:
-  Frame render(const Scene &scene, const Camera &camera) override;
+  void render(const Scene &scene, Camera &camera) override;
 };

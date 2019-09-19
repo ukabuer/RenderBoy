@@ -106,15 +106,16 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
   }
 }
 
-Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
+void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
   auto &meshes = scene.meshes;
   const auto width = camera.getWidth();
   const auto height = camera.getHeight();
 
-  Frame frame(width, height);
+  // clear frame
   const Vector3f background(0.4f, 0.4f, 0.4f);
-  for (auto i = 0ul; i < frame.zBuffer.size(); i++) {
-    frame.setColor(i, background);
+  for (auto i = 0ul; i < camera.frame.size; i++) {
+    camera.frame.zBuffer[i] = -FLT_MAX;
+    camera.frame.setColor(i, background);
   }
 
   const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
@@ -169,9 +170,7 @@ Frame RasterizationRenderer::render(const Scene &scene, const Camera &camera) {
 
     for (auto &p : primitives) {
       drawTriangle(p[0], p[1], p[2], *mesh->material,
-                   scene.pointLights, camera.getPosition(), frame);
+                   scene.pointLights, camera.getPosition(), camera.frame);
     }
   }
-
-  return frame;
 }

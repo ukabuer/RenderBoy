@@ -78,10 +78,10 @@ int main(int argc, const char **argv) {
     auto start = chrono::steady_clock::now();
 
     // render
-    auto frame = renderer.render(scene, *camera);
+    renderer.render(scene, *camera);
 
-    for (auto i = 0; i < frame.colors.size(); i++) {
-      pixels[i] = static_cast<unsigned char>(frame.colors[i] * 255.0f);
+    for (auto i = 0; i < camera->frame.colors.size(); i++) {
+      pixels[i] = static_cast<unsigned char>(camera->frame.colors[i] * 255.0f);
     }
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(
