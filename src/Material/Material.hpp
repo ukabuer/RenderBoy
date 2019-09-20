@@ -1,16 +1,16 @@
 #pragma once
-
+#include "Camera/Camera.hpp"
 #include "Light/PointLight.hpp"
 #include "Primitives.hpp"
+#include <vector>
 
 class Material {
 public:
   Material() = default;
 
-  virtual Eigen::Vector3f
-  getColor(const Point &point,
-           const std::vector<std::shared_ptr<PointLight>> &lights,
-	  const Eigen::Vector3f &view) const = 0;
+  virtual auto getColor(const Point &point,
+                        const std::vector<std::shared_ptr<PointLight>> &lights,
+                        const Camera &camera) const -> Eigen::Vector3f = 0;
 
   virtual ~Material() = default;
 };

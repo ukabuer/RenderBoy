@@ -5,12 +5,14 @@ using namespace Eigen;
 using vec3 = Eigen::Vector3f;
 using vec2 = Eigen::Vector2f;
 
-unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {
+auto Geometry::Box(float w, float h, float d) -> unique_ptr<Geometry> {
   static const uint32_t CUBE_FACE_INDICES[][4] = {
       {3, 7, 5, 1}, {6, 2, 0, 4}, {6, 7, 3, 2},
       {0, 1, 5, 4}, {7, 6, 4, 5}, {2, 3, 1, 0},
   };
-  const auto hw = w / 2, hh = h / 2, hd = d / 2;
+  const auto hw = w / 2;
+  const auto hh = h / 2;
+  const auto hd = d / 2;
   vector<Vector3f> cornerVertices = {
       vec3(-hw, -hh, -hd), vec3(hw, -hh, -hd), vec3(-hw, hh, -hd),
       vec3(hw, hh, -hd),   vec3(-hw, -hh, hd), vec3(hw, -hh, hd),
@@ -60,12 +62,10 @@ unique_ptr<Geometry> Geometry::Box(float w, float h, float d) {
   return geometry;
 }
 
-unique_ptr<Geometry> Geometry::Sphere(float radius, uint32_t subdivisionsAxis,
-                                      uint32_t subdivisionsHeight,
-                                      float startLatitudeInRadians,
-                                      float endLatitudeInRadians,
-                                      float startLongitudeInRadians,
-                                      float endLongitudeInRadians) {
+auto Geometry::Sphere(float radius, uint32_t subdivisionsAxis,
+                      uint32_t subdivisionsHeight, float startLatitudeInRadians,
+                      float endLatitudeInRadians, float startLongitudeInRadians,
+                      float endLongitudeInRadians) -> unique_ptr<Geometry> {
   const auto latRange = endLatitudeInRadians - startLatitudeInRadians;
   const auto longRange = endLongitudeInRadians - startLongitudeInRadians;
 

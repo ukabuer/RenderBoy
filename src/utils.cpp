@@ -6,8 +6,8 @@
 
 using namespace std;
 
-pair<unique_ptr<Camera>, unique_ptr<Scene>>
-load_config(const string &filename) {
+auto load_config(const string &filename)
+    -> pair<unique_ptr<Camera>, unique_ptr<Scene>> {
   auto scene = make_unique<Scene>();
   unique_ptr<Camera> camera;
 

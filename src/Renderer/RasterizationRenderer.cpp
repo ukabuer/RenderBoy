@@ -9,26 +9,26 @@ using namespace Eigen;
 using vec4f = Vector4f;
 using vec3f = Vector3f;
 
-inline int orient2d(const Point &a, const Point &b, const Point &c) {
+inline auto orient2d(const Point &a, const Point &b, const Point &c) -> int {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-inline int max3(int a, int b, int c) {
+inline auto max3(int a, int b, int c) -> int {
   auto tmp = a > b ? a : b;
   return c > tmp ? c : tmp;
 }
 
-inline int min3(int a, int b, int c) {
+inline auto min3(int a, int b, int c) -> int {
   auto tmp = a < b ? a : b;
   return c < tmp ? c : tmp;
 }
 
-inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
+static void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
                          const Material &material,
                          const std::vector<std::shared_ptr<PointLight>> &lights,
-                         const Eigen::Vector3f &view, Frame &frame) {
-  const auto width = static_cast<int>(frame.getWidth());
-  const auto height = static_cast<int>(frame.getHeight());
+                         Camera &camera) {
+  const auto width = static_cast<int>(camera.getWidth());
+  const auto height = static_cast<int>(camera.getHeight());
 
   // Compute triangle bounding box
   auto minX = min3(v0.x, v1.x, v2.x);
@@ -42,9 +42,12 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
   maxX = min(maxX, width - 1);
   maxY = min(maxY, height - 1);
 
-  const auto A01 = v0.y - v1.y, B01 = v1.x - v0.x;
-  const auto A12 = v1.y - v2.y, B12 = v2.x - v1.x;
-  const auto A20 = v2.y - v0.y, B20 = v0.x - v2.x;
+  const auto A01 = v0.y - v1.y;
+  const auto B01 = v1.x - v0.x;
+  const auto A12 = v1.y - v2.y;
+  const auto B12 = v2.x - v1.x;
+  const auto A20 = v2.y - v0.y;
+  const auto B20 = v0.x - v2.x;
 
   Point p;
   p.x = minX;
@@ -69,8 +72,9 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
         if (p.z < -1.f || p.z > 1.f) {
           continue;
         }
-        if (p.z > frame.zBuffer[idx]) {
-          frame.zBuffer[idx] = p.z;
+        auto &zbuffer = camera.getFrame().z;
+        if (p.z > zbuffer[idx]) {
+          camera.setZ(idx, p.z);
           p.u = (w0 * v0.u + w1 * v1.u + w2 * v2.u) / sum;
           p.v = (w0 * v0.v + w1 * v1.v + w2 * v2.v) / sum;
           p.normals[0] =
@@ -91,8 +95,8 @@ inline void drawTriangle(const Point &v0, const Point &v1, const Point &v2,
           p.position[2] = (w0 * v0.position[2] + w1 * v1.position[2] +
                            w2 * v2.position[2]) /
                           sum;
-          const auto color = material.getColor(p, lights, view);
-          frame.setColor(idx, color);
+          const auto color = material.getColor(p, lights, camera);
+          camera.setColor(idx, color);
         }
       }
 
@@ -113,9 +117,10 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
 
   // clear frame
   const Vector3f background(0.4f, 0.4f, 0.4f);
-  for (auto i = 0ul; i < camera.frame.size; i++) {
-    camera.frame.zBuffer[i] = -FLT_MAX;
-    camera.frame.setColor(i, background);
+  const auto size = width * height;
+  for (auto i = 0ul; i < size; i++) {
+    camera.setZ(i, -FLT_MAX);
+    camera.setColor(i, background);
   }
 
   const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
@@ -169,8 +174,8 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
     offset += primitiveNum;
 
     for (auto &p : primitives) {
-      drawTriangle(p[0], p[1], p[2], *mesh->material,
-                   scene.pointLights, camera.getPosition(), camera.frame);
+      drawTriangle(p[0], p[1], p[2], *mesh->material, scene.pointLights,
+                   camera);
     }
   }
 }

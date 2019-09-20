@@ -6,10 +6,10 @@
 #include <string>
 
 struct Model {
-  std::string baseDir;
-  std::vector<std::shared_ptr<Mesh>> meshes;
-  std::vector<std::shared_ptr<Texture>> textures;
-  std::vector<std::shared_ptr<Material>> materials;
+  std::string baseDir = "";
+  std::vector<std::shared_ptr<Mesh>> meshes = {};
+  std::vector<std::shared_ptr<Texture>> textures = {};
+  std::vector<std::shared_ptr<Material>> materials = {};
 
-  static Model Load(const std::string &filepath);
+  static auto Load(const std::string &filepath) -> Model;
 };

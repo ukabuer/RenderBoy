@@ -32,7 +32,10 @@ target_sources(RenderBoy
     src/main.cpp
     src/Geometry.cpp
     src/Camera/Camera.cpp
+    src/Camera/OrthgraphicCamera.cpp
     src/Camera/PerspectiveCamera.cpp
+    src/Camera/OrbitControl.cpp
+    src/Material/PhongMaterial.cpp
     # src/Renderer/ScanLine.cpp
     # src/Renderer/ScanLineRenderer.cpp
     src/Renderer/RasterizationRenderer.cpp

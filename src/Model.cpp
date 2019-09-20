@@ -14,10 +14,12 @@
 using namespace std;
 using namespace Eigen;
 
-static shared_ptr<Texture> loadTexture(const string &path,
-                                       const string &baseDir,
-                                       vector<shared_ptr<Texture>> &textures) {
-  int width, height, channels;
+static auto loadTexture(const string &path, const string &baseDir,
+                        vector<shared_ptr<Texture>> &textures)
+    -> shared_ptr<Texture> {
+  int width;
+  int height;
+  int channels;
   const auto filepath = baseDir + "/" + path;
 
   for (auto &texture : textures) {
@@ -30,7 +32,7 @@ static shared_ptr<Texture> loadTexture(const string &path,
   stbi_ldr_to_hdr_scale(1.0f);
   stbi_ldr_to_hdr_gamma(1.0f);
   const auto data = stbi_loadf(filepath.c_str(), &width, &height, &channels, 0);
-  
+
   if (data == nullptr) {
     throw "Load texture error, file: " + filepath;
   }
@@ -47,9 +49,9 @@ static shared_ptr<Texture> loadTexture(const string &path,
   return texture;
 }
 
-static unique_ptr<Material> loadMaterial(const aiMaterial &ai_material,
-                                         vector<shared_ptr<Texture>> &textures,
-                                         const string &baseDir) {
+static auto loadMaterial(const aiMaterial &ai_material,
+                         vector<shared_ptr<Texture>> &textures,
+                         const string &baseDir) -> unique_ptr<Material> {
   auto material = make_unique<PhongMaterial>();
 
   aiColor3D diffuse;
@@ -77,16 +79,14 @@ static unique_ptr<Material> loadMaterial(const aiMaterial &ai_material,
       ai_material.GetTextureCount(aiTextureType_SPECULAR) > 0;
   if (hasSpecularMap) {
     ai_material.GetTexture(aiTextureType_SPECULAR, 0, &path);
-    material->specularMap =
-        loadTexture(path.C_Str(), baseDir, textures);
+    material->specularMap = loadTexture(path.C_Str(), baseDir, textures);
   }
 
   const auto hasAmbientMap =
       ai_material.GetTextureCount(aiTextureType_AMBIENT) > 0;
   if (hasAmbientMap) {
     ai_material.GetTexture(aiTextureType_AMBIENT, 0, &path);
-    material->ambientMap =
-        loadTexture(path.C_Str(), baseDir, textures);
+    material->ambientMap = loadTexture(path.C_Str(), baseDir, textures);
   }
 
   ai_material.Get(AI_MATKEY_SHININESS, material->shininess);
@@ -97,8 +97,9 @@ static unique_ptr<Material> loadMaterial(const aiMaterial &ai_material,
   return material;
 }
 
-static unique_ptr<Mesh>
-loadMesh(const aiMesh &ai_mesh, const vector<shared_ptr<Material>> &materials) {
+static auto loadMesh(const aiMesh &ai_mesh,
+                     const vector<shared_ptr<Material>> &materials)
+    -> unique_ptr<Mesh> {
   auto vertices = vector<Eigen::Vector3f>();
   auto normals = vector<Eigen::Vector3f>();
   auto texCoords = vector<Eigen::Vector2f>();
@@ -149,7 +150,7 @@ loadMesh(const aiMesh &ai_mesh, const vector<shared_ptr<Material>> &materials) {
   return mesh;
 }
 
-Model Model::Load(const string &filepath) {
+auto Model::Load(const string &filepath) -> Model {
   Model model;
   const auto lastSlash = filepath.find_last_of("/\\");
   if (lastSlash == std::string::npos) {
@@ -164,7 +165,7 @@ Model Model::Load(const string &filepath) {
       filepath, aiProcess_CalcTangentSpace | aiProcess_Triangulate |
                     aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
-  if (!scene) {
+  if (scene == nullptr) {
     cerr << importer.GetErrorString() << endl;
     return model;
   }

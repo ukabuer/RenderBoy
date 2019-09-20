@@ -7,18 +7,18 @@ public:
                     float far);
 
   void setFOV(float fov);
-  float getFOV() const { return this->fov; }
+  auto getFOV() const -> float { return this->fov; }
 
-  void setZNear(float zNear);
-  float getZNear() const { return this->zNear; }
+  void setNear(float zNear);
+  auto getNear() const -> float { return this->near; }
 
-  void setZFar(float zFar);
-  float getZFar() const { return this->zFar; }
+  void setFar(float zFar);
+  auto getFar() const -> float { return this->far; }
 
-  Eigen::Matrix4f getProjectionMatrix() const override;
+  auto getProjectionMatrix() const -> Eigen::Matrix4f override;
 
 private:
   float fov;
-  float zNear;
-  float zFar;
+  float near;
+  float far;
 };

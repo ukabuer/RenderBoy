@@ -5,5 +5,5 @@
 #include <string>
 #include <utility>
 
-std::pair<std::unique_ptr<Camera>, std::unique_ptr<Scene>>
-load_config(const std::string &filename);
+auto load_config(const std::string &filename)
+    -> std::pair<std::unique_ptr<Camera>, std::unique_ptr<Scene>>;

@@ -10,10 +10,12 @@ struct Geometry {
   std::vector<Eigen::Vector3f> normals;
   std::vector<Eigen::Vector2f> texCoords;
 
-  static std::unique_ptr<Geometry> Box(float width = 1.0f, float height = 1.0f,
-                                       float depth = 1.0f);
-  static std::unique_ptr<Geometry> Geometry::Sphere(
-      float radius, uint32_t subdivisionsAxis, uint32_t subdivisionsHeight,
-      float startLatitudeInRadians = 0, float endLatitudeInRadians = PI,
-      float startLongitudeInRadians = 0, float endLongitudeInRadians = 2 * PI);
+  static auto Box(float width = 1.0f, float height = 1.0f, float depth = 1.0f)
+      -> std::unique_ptr<Geometry>;
+
+  static auto
+  Sphere(float radius, uint32_t subdivisionsAxis, uint32_t subdivisionsHeight,
+         float startLatitudeInRadians = 0, float endLatitudeInRadians = PI,
+         float startLongitudeInRadians = 0,
+         float endLongitudeInRadians = 2 * PI) -> std::unique_ptr<Geometry>;
 };

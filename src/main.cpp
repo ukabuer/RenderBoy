@@ -22,7 +22,7 @@ int main(int argc, const char **argv) {
   auto &scene = *(config.second);
   auto renderer = RasterizationRenderer();
   auto controller =
-      OrbitController(*dynamic_pointer_cast<PerspectiveCamera>(camera));
+      OrbitController(*dynamic_cast<PerspectiveCamera *>(camera.get()));
 
   // display
   const auto width = camera->getWidth();
@@ -80,8 +80,9 @@ int main(int argc, const char **argv) {
     // render
     renderer.render(scene, *camera);
 
-    for (auto i = 0; i < camera->frame.colors.size(); i++) {
-      pixels[i] = static_cast<unsigned char>(camera->frame.colors[i] * 255.0f);
+    auto &frame = camera->getFrame();
+    for (auto i = 0; i < frame.colors.size(); i++) {
+      pixels[i] = static_cast<unsigned char>(frame.colors[i] * 255.0f);
     }
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(

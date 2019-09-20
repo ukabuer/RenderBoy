@@ -1,11 +1,11 @@
 #include "Camera/Camera.hpp"
 #include <Eigen/Geometry>
+#include <cfloat>
 
 using namespace Eigen;
 
-static Matrix4f calculateViewMatrix(const Vector3f &pos,
-                                           const Vector3f &target,
-                                           const Vector3f &up) {
+static auto calculateViewMatrix(const Vector3f &pos, const Vector3f &target,
+                                const Vector3f &up) -> Matrix4f {
   Matrix4f result = Matrix4f::Zero();
   auto zAxis = (pos - target).normalized();
   auto xAxis = up.cross(zAxis).normalized();
@@ -16,11 +16,11 @@ static Matrix4f calculateViewMatrix(const Vector3f &pos,
 }
 
 Camera::Camera(uint32_t w, uint32_t h)
-      : width(w), height(h), position(0, 0, 1), target(0, 0, 0), up(0, 1, 0),
-        viewChanged(false), projectionChanged(false), frame(w, h) {
-        this->viewMatrix =
-            calculateViewMatrix(this->position, this->target, this->up);
-
+    : width(w), height(h), position(0, 0, 1), target(0, 0, 0), up(0, 1, 0),
+      frame(), viewChanged(true), projectionChanged(true) {
+  frame.size = w * h;
+  frame.z.resize(frame.size, -FLT_MAX);
+  frame.colors.resize(frame.size * 4, 0.0f);
 }
 
 void Camera::setPosition(float x, float y, float z) {
@@ -50,58 +50,58 @@ void Camera::setUp(float x, float y, float z) {
 
   this->up << x, y, z;
   this->viewChanged = true;
- }
+}
 
 void Camera::setUp(const Eigen::Vector3f &v) {
-   if (v[0] == this->up[0] && v[1] == this->up[1] &&
-       v[2] == this->up[2]) {
-     return;
-   }
+  if (v[0] == this->up[0] && v[1] == this->up[1] && v[2] == this->up[2]) {
+    return;
+  }
 
-   this->up = v;
-   this->viewChanged = true;
- }
+  this->up = v;
+  this->viewChanged = true;
+}
 
 void Camera::setTarget(float x, float y, float z) {
-   if (x == this->target[0] && y == this->target[1] && z == this->target[2]) {
-     return;
-   }
+  if (x == this->target[0] && y == this->target[1] && z == this->target[2]) {
+    return;
+  }
 
-   this->target << x, y, z;
-   this->viewChanged = true;
- }
+  this->target << x, y, z;
+  this->viewChanged = true;
+}
 
 void Camera::setTarget(const Eigen::Vector3f &v) {
-   if (v[0] == this->target[0] && v[1] == this->target[1] && v[2] == this->target[2]) {
-     return;
-   }
+  if (v[0] == this->target[0] && v[1] == this->target[1] &&
+      v[2] == this->target[2]) {
+    return;
+  }
 
-   this->target = v;
-   this->viewChanged = true;
- }
+  this->target = v;
+  this->viewChanged = true;
+}
 
 void Camera::setWidth(uint32_t w) {
-   if (w == this->width) {
-     return;
-   }
+  if (w == this->width) {
+    return;
+  }
 
-   this->width = w;
-   this->viewChanged = true;
- }
+  this->width = w;
+  this->viewChanged = true;
+}
 
 void Camera::setHeight(uint32_t h) {
-   if (h == this->height) {
-     return;
-   }
+  if (h == this->height) {
+    return;
+  }
 
-   this->height = h;
-   this->viewChanged = true;
- }
+  this->height = h;
+  this->viewChanged = true;
+}
 
-Matrix4f Camera::getViewMatrix() const {
-   if (this->viewChanged) {
-     this->viewMatrix = calculateViewMatrix(position, target, up);
-     this->viewChanged = false;
-   }
-   return this->viewMatrix;
- }
+auto Camera::getViewMatrix() const -> Matrix4f {
+  if (this->viewChanged) {
+    this->viewMatrix = calculateViewMatrix(position, target, up);
+    this->viewChanged = false;
+  }
+  return this->viewMatrix;
+}
