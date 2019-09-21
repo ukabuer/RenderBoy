@@ -6,10 +6,10 @@
 
 using namespace std;
 
-auto load_config(const string &filename)
-    -> pair<unique_ptr<Camera>, unique_ptr<Scene>> {
-  auto scene = make_unique<Scene>();
-  unique_ptr<Camera> camera;
+auto RenderConfig::Load(const string &filename) -> RenderConfig {
+  auto result = RenderConfig{};
+  auto &scene = result.scene;
+  auto &camera = result.camera;
 
   try {
     auto config = cpptoml::parse_file(filename);
@@ -42,19 +42,19 @@ auto load_config(const string &filename)
       auto lightConfig = val->as_table();
       auto type = lightConfig->get_as<string>("type").value_or("point");
       if (type == "point") {
-        auto light = make_shared<PointLight>();
+        auto light = Light();
         auto position = config->get_array_of<double>("position")
                             .value_or(initializer_list<double>{1.0, 1.0, 1.0});
-        light->position = {static_cast<float>(position[0]),
-                           static_cast<float>(position[1]),
-                           static_cast<float>(position[2])};
+        light.position = {static_cast<float>(position[0]),
+                          static_cast<float>(position[1]),
+                          static_cast<float>(position[2])};
 
         auto color = config->get_array_of<double>("color").value_or(
             initializer_list<double>{1.0, 1.0, 1.0});
-        light->color = {static_cast<float>(color[0]),
-                        static_cast<float>(color[1]),
-                        static_cast<float>(color[2])};
-        scene->pointLights.emplace_back(move(light));
+        light.color = {static_cast<float>(color[0]),
+                       static_cast<float>(color[1]),
+                       static_cast<float>(color[2])};
+        scene.lights.emplace_back(light);
       }
     }
 
@@ -72,12 +72,12 @@ auto load_config(const string &filename)
 
       auto model = Model::Load(*path);
       for (auto &mesh : model.meshes) {
-        scene->meshes.emplace_back(mesh);
+        scene.meshes.emplace_back(mesh);
       }
     }
   } catch (cpptoml::parse_exception error) {
     cerr << error.what() << endl;
   }
 
-  return make_pair(move(camera), move(scene));
+  return result;
 }

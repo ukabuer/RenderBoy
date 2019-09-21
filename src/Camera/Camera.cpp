@@ -105,3 +105,11 @@ auto Camera::getViewMatrix() const -> Matrix4f {
   }
   return this->viewMatrix;
 }
+
+void Camera::clearFrame(const Vector3f &color, float z) {
+  const auto size = width * height;
+  for (auto i = 0ul; i < size; i++) {
+    this->setZ(i, -FLT_MAX);
+    this->setColor(i, color);
+  }
+}

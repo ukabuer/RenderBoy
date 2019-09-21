@@ -1,5 +1,5 @@
 #pragma once
-#include "Light/PointLight.hpp"
+#include "Light.hpp"
 #include "Material/Material.hpp"
 #include "Material/Texture.hpp"
 #include <Eigen/Core>
@@ -8,8 +8,7 @@
 
 class PhongMaterial : public Material {
 public:
-  auto getColor(const Point &point,
-                const std::vector<std::shared_ptr<PointLight>> &pointLights,
+  auto getColor(const Point &point, const std::vector<Light> &Lights,
                 const Camera &camera) const -> Eigen::Vector3f override;
 
   Eigen::Vector3f diffuseColor;

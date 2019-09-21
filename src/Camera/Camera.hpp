@@ -1,7 +1,9 @@
 #pragma once
 #include "Frame.hpp"
 #include <Eigen/Core>
+#include <cfloat>
 #include <cstdint>
+#include <iostream>
 
 class Camera {
 public:
@@ -48,6 +50,9 @@ public:
   }
 
   auto getFrame() const -> const Frame & { return frame; }
+
+  void clearFrame(const Eigen::Vector3f &color = {0.0f, 0.0f, 0.0f},
+                  float z = -FLT_MAX);
 
   virtual auto getViewMatrix() const -> Eigen::Matrix4f;
 

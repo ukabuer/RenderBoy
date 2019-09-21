@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Renderer/Renderer.hpp"
 
 class RasterizationRenderer final : public Renderer {

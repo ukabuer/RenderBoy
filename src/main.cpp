@@ -1,6 +1,6 @@
 #include "Camera/OrbitControl.hpp"
 #include "Camera/PerspectiveCamera.hpp"
-#include "Light/PointLight.hpp"
+#include "Light.hpp"
 #include "Model.hpp"
 #include "Renderer/RasterizationRenderer.hpp"
 #include "utils.hpp"
@@ -17,9 +17,9 @@ int main(int argc, const char **argv) {
     return 1;
   }
 
-  auto config = load_config(argv[1]);
-  shared_ptr<Camera> camera = move(config.first);
-  auto &scene = *(config.second);
+  auto config = RenderConfig::Load(argv[1]);
+  shared_ptr<Camera> camera = move(config.camera);
+  auto scene = move(config.scene);
   auto renderer = RasterizationRenderer();
   auto controller =
       OrbitController(*dynamic_cast<PerspectiveCamera *>(camera.get()));

@@ -14,7 +14,7 @@
 using namespace std;
 using namespace Eigen;
 
-static auto loadTexture(const string &path, const string &baseDir,
+static auto LoadTexture(const string &path, const string &baseDir,
                         vector<shared_ptr<Texture>> &textures)
     -> shared_ptr<Texture> {
   int width;
@@ -49,7 +49,7 @@ static auto loadTexture(const string &path, const string &baseDir,
   return texture;
 }
 
-static auto loadMaterial(const aiMaterial &ai_material,
+static auto LoadMaterial(const aiMaterial &ai_material,
                          vector<shared_ptr<Texture>> &textures,
                          const string &baseDir) -> unique_ptr<Material> {
   auto material = make_unique<PhongMaterial>();
@@ -72,21 +72,21 @@ static auto loadMaterial(const aiMaterial &ai_material,
       ai_material.GetTextureCount(aiTextureType_DIFFUSE) > 0;
   if (hasDiffuseMap) {
     ai_material.GetTexture(aiTextureType_DIFFUSE, 0, &path);
-    material->diffuseMap = loadTexture(path.C_Str(), baseDir, textures);
+    material->diffuseMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
   const auto hasSpecularMap =
       ai_material.GetTextureCount(aiTextureType_SPECULAR) > 0;
   if (hasSpecularMap) {
     ai_material.GetTexture(aiTextureType_SPECULAR, 0, &path);
-    material->specularMap = loadTexture(path.C_Str(), baseDir, textures);
+    material->specularMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
   const auto hasAmbientMap =
       ai_material.GetTextureCount(aiTextureType_AMBIENT) > 0;
   if (hasAmbientMap) {
     ai_material.GetTexture(aiTextureType_AMBIENT, 0, &path);
-    material->ambientMap = loadTexture(path.C_Str(), baseDir, textures);
+    material->ambientMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
   ai_material.Get(AI_MATKEY_SHININESS, material->shininess);
@@ -97,28 +97,16 @@ static auto loadMaterial(const aiMaterial &ai_material,
   return material;
 }
 
-static auto loadMesh(const aiMesh &ai_mesh,
-                     const vector<shared_ptr<Material>> &materials)
-    -> unique_ptr<Mesh> {
+static auto LoadMesh(const aiMesh &ai_mesh,
+                     const vector<shared_ptr<Material>> &materials) -> Mesh {
   auto vertices = vector<Eigen::Vector3f>();
   auto normals = vector<Eigen::Vector3f>();
   auto texCoords = vector<Eigen::Vector2f>();
   auto indices = vector<uint32_t>();
 
-  if (ai_mesh.HasFaces()) {
-    for (auto i = 0u; i < ai_mesh.mNumFaces; i++) {
-      auto &face = ai_mesh.mFaces[i];
-      for (unsigned int j = 0; j < face.mNumIndices; j++) {
-        indices.push_back(face.mIndices[j]);
-      }
-    }
-  }
-
-  if (ai_mesh.HasPositions()) {
-    for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
-      vertices.emplace_back(ai_mesh.mVertices[i].x, ai_mesh.mVertices[i].y,
-                            ai_mesh.mVertices[i].z);
-    }
+  for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
+    vertices.emplace_back(ai_mesh.mVertices[i].x, ai_mesh.mVertices[i].y,
+                          ai_mesh.mVertices[i].z);
   }
 
   if (ai_mesh.HasNormals()) {
@@ -135,6 +123,21 @@ static auto loadMesh(const aiMesh &ai_mesh,
     }
   }
 
+  if (ai_mesh.HasFaces()) {
+    for (auto i = 0u; i < ai_mesh.mNumFaces; i++) {
+      auto &face = ai_mesh.mFaces[i];
+      for (unsigned int j = 0; j < face.mNumIndices; j++) {
+        indices.push_back(face.mIndices[j]);
+      }
+    }
+  } else {
+    for (auto i = 0ul; i < ai_mesh.mNumVertices; i++) {
+      indices.emplace_back(i);
+      indices.emplace_back(i + 1);
+      indices.emplace_back(i + 2);
+    }
+  }
+
   auto material = materials.empty() || !ai_mesh.HasNormals()
                       ? make_shared<DepthMaterial>()
                       : materials[ai_mesh.mMaterialIndex];
@@ -144,10 +147,7 @@ static auto loadMesh(const aiMesh &ai_mesh,
   geometry->normals = move(normals);
   geometry->texCoords = move(texCoords);
 
-  auto mesh = make_unique<Mesh>();
-  mesh->geometry = move(geometry);
-  mesh->material = material;
-  return mesh;
+  return {move(geometry), material};
 }
 
 auto Model::Load(const string &filepath) -> Model {
@@ -173,14 +173,14 @@ auto Model::Load(const string &filepath) -> Model {
   if (scene->HasMaterials()) {
     for (auto i = 0u; i < scene->mNumMaterials; i++) {
       shared_ptr<Material> material =
-          loadMaterial(*scene->mMaterials[i], model.textures, model.baseDir);
+          LoadMaterial(*scene->mMaterials[i], model.textures, model.baseDir);
       model.materials.emplace_back(material);
     }
   }
 
   if (scene->HasMeshes()) {
     for (auto i = 0u; i < scene->mNumMeshes; i++) {
-      shared_ptr<Mesh> mesh = loadMesh(*scene->mMeshes[i], model.materials);
+      auto mesh = LoadMesh(*scene->mMeshes[i], model.materials);
       model.meshes.emplace_back(mesh);
     }
   }

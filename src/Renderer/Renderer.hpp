@@ -1,7 +1,5 @@
 #pragma once
-
 #include "Camera/Camera.hpp"
-#include "Frame.hpp"
 #include "Scene.hpp"
 
 class Renderer {

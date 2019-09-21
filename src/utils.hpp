@@ -3,7 +3,10 @@
 #include "Scene.hpp"
 #include <memory>
 #include <string>
-#include <utility>
 
-auto load_config(const std::string &filename)
-    -> std::pair<std::unique_ptr<Camera>, std::unique_ptr<Scene>>;
+struct RenderConfig {
+  Scene scene;
+  std::unique_ptr<Camera> camera;
+
+  static auto Load(const std::string &filename) -> RenderConfig;
+};

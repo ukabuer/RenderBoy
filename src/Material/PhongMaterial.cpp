@@ -4,16 +4,16 @@ using namespace std;
 using namespace Eigen;
 
 auto PhongMaterial::getColor(const Point &point,
-                             const vector<shared_ptr<PointLight>> &pointLights,
+                             const std::vector<Light> &lights,
                              const Camera &camera) const -> Vector3f {
   Vector3f result(0.0f, 0.0f, 0.0f);
 
   const Vector3f V = (camera.getPosition() - point.position).normalized();
-  for (auto &pointLight : pointLights) {
+  for (auto &light : lights) {
     const auto N = point.normals;
-    const Vector3f L = (pointLight->position - point.position).normalized();
+    const Vector3f L = (light.position - point.position).normalized();
     const Vector3f H = (L + V).normalized();
-    const auto lightColor = pointLight->color;
+    const auto lightColor = light.color;
 
     Vector3f diffuse(0.0f, 0.0f, 0.0f);
     Vector3f specular(0.0f, 0.0f, 0.0f);
@@ -24,7 +24,7 @@ auto PhongMaterial::getColor(const Point &point,
       if (diffuseMap == nullptr) {
         diffuse = diffuseFactor * diffuseColor.cwiseProduct(lightColor);
       } else {
-        const auto color = diffuseMap->getColor(point.u, point.v);
+        const auto color = diffuseMap->getColor(point.uv[0], point.uv[1]);
         diffuse = diffuseFactor * color.cwiseProduct(lightColor);
       }
     }
@@ -34,7 +34,7 @@ auto PhongMaterial::getColor(const Point &point,
       if (specularMap == nullptr) {
         specular = specularFactor * specularColor.cwiseProduct(lightColor);
       } else {
-        const auto color = specularMap->getColor(point.u, 1.0f - point.v);
+        const auto color = specularMap->getColor(point.uv[0], point.uv[1]);
         specular = diffuseFactor * color.cwiseProduct(lightColor);
       }
     }
