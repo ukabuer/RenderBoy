@@ -3,30 +3,30 @@
 using namespace std;
 using namespace Eigen;
 
-auto SamplePhongMaterial(const Point &point, const std::vector<Light> &lights,
+auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
                          const Camera &camera, const PhongMaterialData &data)
     -> Eigen::Vector3f {
   Vector3f result(0.0f, 0.0f, 0.0f);
 
   auto diffuseColor = data.diffuseColor;
   if (data.diffuseMap) {
-    const auto sampled = data.diffuseMap->sample(point.uv[0], point.uv[1]);
+    const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
     diffuseColor = diffuseColor.cwiseProduct(sampled);
   }
 
   auto specularColor = data.specularColor;
   if (data.specularMap) {
-    const auto sampled = data.diffuseMap->sample(point.uv[0], point.uv[1]);
+    const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
     specularColor = specularColor.cwiseProduct(sampled);
   }
 
-  const Vector3f V = (camera.getPosition() - point.position).normalized();
+  const Vector3f V = (camera.getPosition() - v.position).normalized();
   for (auto &light : lights) {
     if (light.type == Light::Type::Ambient) {
       result += light.intensity * diffuseColor;
     } else if (light.type == Light::Type::Point) {
-      const auto N = point.normals;
-      const Vector3f L = (light.position - point.position).normalized();
+      const auto N = v.normals;
+      const Vector3f L = (light.position - v.position).normalized();
       const Vector3f H = (L + V).normalized();
       const auto lightColor = light.color;
 

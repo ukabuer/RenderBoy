@@ -1,5 +1,14 @@
 #pragma once
 #include <Eigen/Core>
+#include <array>
+
+struct Vertex {
+  Eigen::Vector3f position = {0.f, 0.f, 0.f};
+  Eigen::Vector3f normals = {0.f, 0.f, 0.f};
+  std::array<float, 2> uv = {0.f, 0.f};
+  std::array<int, 2> screen = {0, 0};
+  float depth = 0.0f;
+};
 
 struct Point {
   int x = 0;

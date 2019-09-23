@@ -1,18 +1,18 @@
 #include "Renderer/RasterizationRenderer.hpp"
 #include "Primitives.hpp"
+#include "utils.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <array>
-#include "utils.hpp"
 
 using namespace std;
 using namespace Eigen;
 using vec4f = Vector4f;
 using vec3f = Vector3f;
 
-static inline auto orient2d(const Point &a, const Point &b, const Point &c)
-    -> int {
-  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+static inline auto orient2d(const array<int, 2> &a, const array<int, 2> &b,
+                            const array<int, 2> &c) -> int {
+  return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
 }
 
 static inline auto max3(int a, int b, int c) -> int {
@@ -25,17 +25,17 @@ static inline auto min3(int a, int b, int c) -> int {
   return c < tmp ? c : tmp;
 }
 
-static void RenderTriangle(const Point &v0, const Point &v1, const Point &v2,
+static void RenderTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
                            const Material &material,
                            const std::vector<Light> &lights, Camera &camera) {
   const auto width = static_cast<int>(camera.getWidth());
   const auto height = static_cast<int>(camera.getHeight());
 
   // Compute triangle bounding box
-  auto minX = min3(v0.x, v1.x, v2.x);
-  auto minY = min3(v0.y, v1.y, v2.y);
-  auto maxX = max3(v0.x, v1.x, v2.x);
-  auto maxY = max3(v0.y, v1.y, v2.y);
+  auto minX = min3(v0.screen[0], v1.screen[0], v2.screen[0]);
+  auto minY = min3(v0.screen[1], v1.screen[1], v2.screen[1]);
+  auto maxX = max3(v0.screen[0], v1.screen[0], v2.screen[0]);
+  auto maxY = max3(v0.screen[1], v1.screen[1], v2.screen[1]);
 
   // Clip against screen bounds
   minX = max(minX, 0);
@@ -43,40 +43,41 @@ static void RenderTriangle(const Point &v0, const Point &v1, const Point &v2,
   maxX = min(maxX, width - 1);
   maxY = min(maxY, height - 1);
 
-  const auto A01 = v0.y - v1.y;
-  const auto B01 = v1.x - v0.x;
-  const auto A12 = v1.y - v2.y;
-  const auto B12 = v2.x - v1.x;
-  const auto A20 = v2.y - v0.y;
-  const auto B20 = v0.x - v2.x;
+  const auto A01 = v0.screen[1] - v1.screen[1];
+  const auto B01 = v1.screen[0] - v0.screen[0];
+  const auto A12 = v1.screen[1] - v2.screen[1];
+  const auto B12 = v2.screen[0] - v1.screen[0];
+  const auto A20 = v2.screen[1] - v0.screen[1];
+  const auto B20 = v0.screen[0] - v2.screen[0];
 
-  Point p;
-  p.x = minX;
-  p.y = minY;
-  auto w0_row = orient2d(v1, v2, p);
-  auto w1_row = orient2d(v2, v0, p);
-  auto w2_row = orient2d(v0, v1, p);
+  Vertex p;
+  p.screen[0] = minX;
+  p.screen[1] = minY;
+  auto w0_row = orient2d(v1.screen, v2.screen, p.screen);
+  auto w1_row = orient2d(v2.screen, v0.screen, p.screen);
+  auto w2_row = orient2d(v0.screen, v1.screen, p.screen);
 
   // Rasterize
-  for (p.y = minY; p.y <= maxY; p.y++) {
+  for (p.screen[1] = minY; p.screen[1] <= maxY; p.screen[1]++) {
     // Determine barycentric coordinates
     auto w0 = w0_row;
     auto w1 = w1_row;
     auto w2 = w2_row;
 
     const auto sum = w0 + w1 + w2;
-    for (p.x = minX; p.x <= maxX; p.x++) {
+    for (p.screen[0] = minX; p.screen[0] <= maxX; p.screen[0]++) {
       // If p is on or inside all edges, render pixel.
       if (w0 >= 0 && w1 >= 0 && w2 >= 0 && sum != 0) {
-        p.z = -(w0 * v0.z + w1 * v1.z + w2 * v2.z) / sum;
-        const auto idx = static_cast<size_t>(p.x + p.y * width);
-        if (p.z < -1.f || p.z > 1.f) {
+        p.depth = -(w0 * v0.depth + w1 * v1.depth + w2 * v2.depth) / sum;
+        const auto idx = static_cast<size_t>(p.screen[0] + p.screen[1] * width);
+        if (p.depth < -1.f || p.depth > 1.f) {
           continue;
         }
         auto &zbuffer = camera.getFrame().z;
-        if (p.z > zbuffer[idx]) {
-          camera.setZ(idx, p.z);
-          p.uv = (w0 * v0.uv + w1 * v1.uv + w2 * v2.uv) / sum;
+        if (p.depth > zbuffer[idx]) {
+          camera.setZ(idx, p.depth);
+          p.uv = {(w0 * v0.uv[0] + w1 * v1.uv[0] + w2 * v2.uv[0]) / sum,
+                  (w0 * v0.uv[1] + w1 * v1.uv[1] + w2 * v2.uv[1]) / sum};
           p.normals =
               (w0 * v0.normals + w1 * v1.normals + w2 * v2.normals) / sum;
           p.position =
@@ -108,53 +109,32 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
   const Matrix4f projectionMatrix = camera.getProjectionMatrix();
   const Matrix4f matrix = projectionMatrix * viewMatrix;
 
-  vector<array<Point, 3>> primitives;
-  size_t offset = 0;
   for (auto &mesh : meshes) {
     auto &geo = mesh.geometry;
 
-    auto &indices = geo->indices;
     auto &vertices = geo->vertices;
-    auto &texCoords = geo->texCoords;
-    auto &normals = geo->normals;
+    auto &indices = geo->indices;
 
-    const auto vertexNum = indices.size();
-    const auto primitiveNum = vertexNum / 3;
-
-    primitives.resize(offset + primitiveNum);
-
-    for (size_t j = 0; j < primitiveNum; j++) {
-      const auto idx = j * 3;
-      assert(offset + j < primitives.size());
-      auto &primitive = primitives[offset + j];
-
-      for (size_t k = 0; k < 3; k++) {
-        auto &v = vertices[indices[idx + k]];
-        auto uv = Vector2f(0.0f, 0.0f);
-        if (!texCoords.empty()) {
-          uv = texCoords[indices[idx + k]];
-        }
-        auto normal = Vector3f(0.0f, 0.0f, 0.0f);
-        if (!normals.empty()) {
-          normal = normals[indices[idx + k]];
-        }
-        vec4f nv = matrix * vec4f(v[0], v[1], v[2], 1.0);
-        const Point p{
-            static_cast<int>((nv[0] / nv[3] + 1.0f) * width / 2),
-            static_cast<int>((nv[1] / nv[3] + 1.0f) * height / 2),
-            nv[2] / nv[3],
-            uv,
-            normal,
-            v,
-        };
-        primitive[k] = p;
-      }
+    // transform
+    for (auto &vertex : vertices) {
+      Eigen::Vector4f value =
+          matrix * Vector4f(vertex.position[0], vertex.position[1],
+                            vertex.position[2], 1.0f);
+      vertex.screen = {
+          static_cast<int>((value[0] / value[3] + 1.f) * width / 2.0f),
+          static_cast<int>((value[1] / value[3] + 1.f) * height / 2.0f)};
+      vertex.depth = value[2] / value[3];
     }
-    offset += primitiveNum;
 
-    ParallelForEach(0ull, primitives.size(), [&mesh, &scene, &camera, &primitives](auto i) {
-      const auto &p = primitives[i];
-      RenderTriangle(p[0], p[1], p[2], *mesh.material, scene.lights, camera);
-    });
+    auto &material = *mesh.material;
+    const auto triangleNum = indices.size() / 3;
+    ParallelForEach(0ull, triangleNum,
+                    [&vertices, &indices, &material, &scene, &camera](auto i) {
+                      i *= 3;
+                      RenderTriangle(vertices[indices[i]],
+                                     vertices[indices[i + 1]],
+                                     vertices[indices[i + 2]], material,
+                                     scene.lights, camera);
+                    });
   }
 }

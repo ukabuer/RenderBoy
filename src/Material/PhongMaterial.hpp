@@ -19,5 +19,5 @@ struct PhongMaterialData {
   std::shared_ptr<Texture> bumpMap;
 };
 
-auto SamplePhongMaterial(const Point &point, const std::vector<Light> &lights,
+auto SamplePhongMaterial(const Vertex &vertex, const std::vector<Light> &lights,
                          const Camera &camera, const PhongMaterialData &data) -> Eigen::Vector3f;

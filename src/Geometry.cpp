@@ -30,22 +30,22 @@ auto Geometry::Box(float w, float h, float d) -> unique_ptr<Geometry> {
   };
 
   const auto numVertices = 4 * 6;
-  auto vertices = vector<vec3>(numVertices);
-  auto normals = vector<vec3>(numVertices);
-  auto texCoords = vector<vec2>(numVertices);
+  auto vertices = vector<Vertex>(numVertices);
   auto indices = vector<uint32_t>(3 * 6 * 2);
 
   auto idx = 0;
   for (auto f = 0u; f < 6; f++) {
     const auto faceIndices = CUBE_FACE_INDICES[f];
     for (auto v = 0u; v < 4; v++) {
+      auto &vertex = vertices[idx];
+
       const auto position = cornerVertices[faceIndices[v]];
-      const auto normal = faceNormals[f];
+      const auto normals = faceNormals[f];
       const auto uv = uvCoords[v];
 
-      vertices[idx] = position;
-      normals[idx] = normal;
-      texCoords[idx] = uv;
+      vertex.position = position;
+      vertex.normals = normals;
+      vertex.uv = {uv[0], uv[1]};
       idx += 1;
     }
 
@@ -57,8 +57,6 @@ auto Geometry::Box(float w, float h, float d) -> unique_ptr<Geometry> {
   auto geometry = make_unique<Geometry>();
   geometry->indices = move(indices);
   geometry->vertices = move(vertices);
-  geometry->normals = move(normals);
-  geometry->texCoords = move(texCoords);
   return geometry;
 }
 
@@ -70,15 +68,12 @@ auto Geometry::Sphere(float radius, uint32_t subdivisionsAxis,
   const auto longRange = endLongitudeInRadians - startLongitudeInRadians;
 
   const auto numVertices = (subdivisionsAxis + 1) * (subdivisionsHeight + 1);
-  auto vertices = vector<vec3>();
-  vertices.reserve(numVertices);
-  auto normals = vector<vec3>();
-  normals.reserve(numVertices);
-  auto texCoords = vector<vec2>();
-  texCoords.reserve(numVertices);
+  auto vertices = vector<Vertex>(numVertices);
 
+  auto idx = 0u;
   for (auto y = 0u; y <= subdivisionsHeight; y++) {
     for (auto x = 0u; x <= subdivisionsAxis; x++) {
+      auto &vertex = vertices[idx];
       const auto u = static_cast<float>(x) / subdivisionsAxis;
       const auto v = static_cast<float>(y) / subdivisionsHeight;
       const auto theta = longRange * u + startLongitudeInRadians;
@@ -90,9 +85,12 @@ auto Geometry::Sphere(float radius, uint32_t subdivisionsAxis,
       const auto ux = cosTheta * sinPhi;
       const auto uy = cosPhi;
       const auto uz = sinTheta * sinPhi;
-      vertices.emplace_back(radius * ux, radius * uy, radius * uz);
-      normals.emplace_back(ux, uy, uz);
-      texCoords.emplace_back(1 - u, v);
+      vertex = {
+        {radius * ux, radius * uy, radius * uz}, // position
+        {ux, uy, uz}, // normals
+        {1 - u, v}, // uv
+      };
+      idx++;
     }
   }
 
@@ -116,7 +114,5 @@ auto Geometry::Sphere(float radius, uint32_t subdivisionsAxis,
   auto geometry = make_unique<Geometry>();
   geometry->indices = move(indices);
   geometry->vertices = move(vertices);
-  geometry->normals = move(normals);
-  geometry->texCoords = move(texCoords);
   return geometry;
 }

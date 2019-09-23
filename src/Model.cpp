@@ -103,27 +103,25 @@ static auto LoadMaterial(const aiMaterial &ai_material,
 
 static auto LoadMesh(const aiMesh &ai_mesh,
                      const vector<shared_ptr<Material>> &materials) -> Mesh {
-  auto vertices = vector<Eigen::Vector3f>();
-  auto normals = vector<Eigen::Vector3f>();
-  auto texCoords = vector<Eigen::Vector2f>();
   auto indices = vector<uint32_t>();
+  auto vertices = vector<Vertex>(ai_mesh.mNumVertices);
 
   for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
-    vertices.emplace_back(ai_mesh.mVertices[i].x, ai_mesh.mVertices[i].y,
-                          ai_mesh.mVertices[i].z);
+    vertices[i].position = {ai_mesh.mVertices[i].x, ai_mesh.mVertices[i].y,
+                            ai_mesh.mVertices[i].z};
   }
 
   if (ai_mesh.HasNormals()) {
     for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
-      normals.emplace_back(ai_mesh.mNormals[i].x, ai_mesh.mNormals[i].y,
-                           ai_mesh.mNormals[i].z);
+      vertices[i].normals = {ai_mesh.mNormals[i].x, ai_mesh.mNormals[i].y,
+                             ai_mesh.mNormals[i].z};
     }
   }
 
   if (ai_mesh.HasTextureCoords(0)) {
     for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
-      texCoords.emplace_back(ai_mesh.mTextureCoords[0][i].x,
-                             ai_mesh.mTextureCoords[0][i].y);
+      vertices[i].uv = {ai_mesh.mTextureCoords[0][i].x,
+                        ai_mesh.mTextureCoords[0][i].y};
     }
   }
 
@@ -148,8 +146,6 @@ static auto LoadMesh(const aiMesh &ai_mesh,
   auto geometry = make_unique<Geometry>();
   geometry->vertices = move(vertices);
   geometry->indices = move(indices);
-  geometry->normals = move(normals);
-  geometry->texCoords = move(texCoords);
 
   return {move(geometry), material};
 }

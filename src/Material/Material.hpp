@@ -18,7 +18,7 @@ struct Material {
   PhongMaterialData phong;
   // };
 
-  auto sample(const Point &point, const std::vector<Light> &lights,
+  auto sample(const Vertex &vertex, const std::vector<Light> &lights,
               const Camera &camera) const -> Eigen::Vector3f;
 
   static auto Phong() -> Material;

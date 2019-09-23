@@ -1,4 +1,5 @@
 #pragma once
+#include "Primitives.hpp"
 #include <Eigen/Core>
 #include <vector>
 
@@ -6,9 +7,7 @@ const auto PI = atan(1.0f) * 4.0f;
 
 struct Geometry {
   std::vector<uint32_t> indices;
-  std::vector<Eigen::Vector3f> vertices;
-  std::vector<Eigen::Vector3f> normals;
-  std::vector<Eigen::Vector2f> texCoords;
+  std::vector<Vertex> vertices;
 
   static auto Box(float width = 1.0f, float height = 1.0f, float depth = 1.0f)
       -> std::unique_ptr<Geometry>;

@@ -26,15 +26,15 @@ auto Material::Phong() -> Material {
   return material;
 }
 
-auto Material::sample(const Point &point, const std::vector<Light> &lights,
+auto Material::sample(const Vertex &v, const std::vector<Light> &lights,
                       const Camera &camera) const -> Eigen::Vector3f {
   switch (type) {
   case Type::Depth:
-    return SampleDepthMaterial(point);
+    return SampleDepthMaterial(v);
   case Type::Nomral:
-    return SampleNormalMaterial(point);
+    return SampleNormalMaterial(v);
   case Type::Phong:
-    return SamplePhongMaterial(point, lights, camera, phong);
+    return SamplePhongMaterial(v, lights, camera, phong);
   default:
     return Vector3f::Zero();
   }

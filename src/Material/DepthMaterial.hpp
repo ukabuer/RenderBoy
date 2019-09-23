@@ -2,8 +2,8 @@
 #include "Primitives.hpp"
 #include <array>
 
-inline auto SampleDepthMaterial(const Point &point) -> Eigen::Vector3f {
-  const auto gray = (point.z + 1.0f) / 2.0f;
+inline auto SampleDepthMaterial(const Vertex &vertex) -> Eigen::Vector3f {
+  const auto gray = (vertex.depth + 1.0f) / 2.0f;
 
   return {gray, gray, gray};
 }
