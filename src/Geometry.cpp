@@ -6,9 +6,13 @@ using vec3 = Eigen::Vector3f;
 using vec2 = Eigen::Vector2f;
 
 auto Geometry::Box(float w, float h, float d) -> unique_ptr<Geometry> {
-  static const uint32_t CUBE_FACE_INDICES[][4] = {
-      {3, 7, 5, 1}, {6, 2, 0, 4}, {6, 7, 3, 2},
-      {0, 1, 5, 4}, {7, 6, 4, 5}, {2, 3, 1, 0},
+  static const array<array<uint32_t, 4>, 6> CUBE_FACE_INDICES = {
+      {{{3, 7, 5, 1}},
+       {{6, 2, 0, 4}},
+       {{6, 7, 3, 2}},
+       {{0, 1, 5, 4}},
+       {{7, 6, 4, 5}},
+       {{2, 3, 1, 0}}},
   };
   const auto hw = w / 2;
   const auto hh = h / 2;
@@ -35,11 +39,11 @@ auto Geometry::Box(float w, float h, float d) -> unique_ptr<Geometry> {
 
   auto idx = 0;
   for (auto f = 0u; f < 6; f++) {
-    const auto faceIndices = CUBE_FACE_INDICES[f];
+    const auto faceIndices = CUBE_FACE_INDICES.at(f);
     for (auto v = 0u; v < 4; v++) {
       auto &vertex = vertices[idx];
 
-      const auto position = cornerVertices[faceIndices[v]];
+      const auto position = cornerVertices[faceIndices.at(v)];
       const auto normals = faceNormals[f];
       const auto uv = uvCoords[v];
 
@@ -86,9 +90,9 @@ auto Geometry::Sphere(float radius, uint32_t subdivisionsAxis,
       const auto uy = cosPhi;
       const auto uz = sinTheta * sinPhi;
       vertex = {
-        {radius * ux, radius * uy, radius * uz}, // position
-        {ux, uy, uz}, // normals
-        {1 - u, v}, // uv
+          {radius * ux, radius * uy, radius * uz}, // position
+          {ux, uy, uz},                            // normals
+          {1 - u, v},                              // uv
       };
       idx++;
     }
