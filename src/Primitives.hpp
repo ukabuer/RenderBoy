@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Eigen/Core>
 
 struct Point {

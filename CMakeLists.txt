@@ -20,7 +20,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(SFML CONFIG REQUIRED graphics)
-find_package(TBB CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_path(STB_IMAGE_INCLUDE_DIR stb_image.h)
@@ -31,10 +30,9 @@ target_sources(RenderBoy
   PRIVATE
     src/main.cpp
     src/Geometry.cpp
-    src/Camera/Camera.cpp
-    src/Camera/OrthgraphicCamera.cpp
-    src/Camera/PerspectiveCamera.cpp
-    src/Camera/OrbitControl.cpp
+    src/Camera.cpp
+    src/CameraControls/OrbitControl.cpp
+    src/Material/Material.cpp
     src/Material/PhongMaterial.cpp
     # src/Renderer/ScanLine.cpp
     # src/Renderer/ScanLineRenderer.cpp
@@ -42,10 +40,10 @@ target_sources(RenderBoy
     src/Model.cpp
     src/utils.cpp
 )
+
 target_link_libraries(RenderBoy
   PRIVATE
     sfml-graphics
-    TBB::tbb
     Eigen3::Eigen
     ${ASSIMP_LIBRARIES}
 )

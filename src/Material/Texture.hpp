@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Eigen/Core>
 #include <algorithm>
 #include <string>
@@ -12,15 +11,47 @@ struct Texture {
   std::string type;
   std::string path;
 
-  Eigen::Vector3f getColor(float u, float v) const {
-    u = std::max(std::min(u, 1.f), 0.f);
-    v = std::max(std::min(v, 1.f), 0.f);
+  Texture() = default;
 
-    auto idx = static_cast<size_t>(u * (width - 1)) +
-               static_cast<size_t>(v * (height - 1)) * width;
-    idx = channels == 4 ? idx << 2 : idx * 3;
+  Texture(const Texture &other)
+      : width(other.width), height(other.height), channels(other.channels),
+        type(other.type), path(other.path) {
+    if (data != other.data) {
+      std::memcpy(data, other.data, width * height * channels * sizeof(float));
+    }
+  }
 
-    return Eigen::Vector3f{data[idx], data[idx + 1], data[idx + 2]};
+  Texture(Texture &&other)
+      : data(other.data), width(other.width), height(other.height),
+        channels(other.channels), type(other.type), path(other.path) {
+    other.data = nullptr;
+  }
+
+  auto operator=(const Texture &other) -> Texture & {
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    type = other.type;
+    path = other.path;
+
+    if (data != other.data) {
+      std::memcpy(data, other.data, width * height * channels * sizeof(float));
+    }
+
+    return *this;
+  }
+
+  auto operator=(Texture &&other) -> Texture & {
+    data = other.data;
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    type = other.type;
+    path = other.path;
+
+    other.data = nullptr;
+
+    return *this;
   }
 
   ~Texture() {
@@ -29,5 +60,16 @@ struct Texture {
     }
 
     delete data;
+  }
+
+  auto sample(float u, float v) const -> Eigen::Vector3f {
+    u = std::max(std::min(u, 1.f), 0.f);
+    v = std::max(std::min(v, 1.f), 0.f);
+
+    auto idx = static_cast<size_t>(u * static_cast<float>(width - 1)) +
+                    static_cast<size_t>(v * static_cast<float>(height - 1)) * width;
+    idx = channels == 4 ? idx << 2 : idx * 3;
+
+    return {data[idx], data[idx + 1], data[idx + 2]};
   }
 };

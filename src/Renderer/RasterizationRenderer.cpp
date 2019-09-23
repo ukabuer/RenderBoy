@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <array>
+#include "utils.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -24,7 +25,7 @@ static inline auto min3(int a, int b, int c) -> int {
   return c < tmp ? c : tmp;
 }
 
-static void renderTriangle(const Point &v0, const Point &v1, const Point &v2,
+static void RenderTriangle(const Point &v0, const Point &v1, const Point &v2,
                            const Material &material,
                            const std::vector<Light> &lights, Camera &camera) {
   const auto width = static_cast<int>(camera.getWidth());
@@ -80,7 +81,7 @@ static void renderTriangle(const Point &v0, const Point &v1, const Point &v2,
               (w0 * v0.normals + w1 * v1.normals + w2 * v2.normals) / sum;
           p.position =
               (w0 * v0.position + w1 * v1.position + w2 * v2.position) / sum;
-          const auto color = material.getColor(p, lights, camera);
+          const auto color = material.sample(p, lights, camera);
           camera.setColor(idx, color);
         }
       }
@@ -101,8 +102,7 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
   const auto height = camera.getHeight();
 
   // clear frame
-  const Vector3f background(0.4f, 0.4f, 0.4f);
-  camera.clearFrame(background);
+  camera.clearFrame(scene.background);
 
   const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
   const Matrix4f projectionMatrix = camera.getProjectionMatrix();
@@ -152,8 +152,9 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
     }
     offset += primitiveNum;
 
-    for (auto &p : primitives) {
-      renderTriangle(p[0], p[1], p[2], *mesh.material, scene.lights, camera);
-    }
+    ParallelForEach(0ull, primitives.size(), [&mesh, &scene, &camera, &primitives](auto i) {
+      const auto &p = primitives[i];
+      RenderTriangle(p[0], p[1], p[2], *mesh.material, scene.lights, camera);
+    });
   }
 }

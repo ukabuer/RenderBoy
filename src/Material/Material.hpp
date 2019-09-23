@@ -1,15 +1,27 @@
 #pragma once
-#include "Camera/Camera.hpp"
+#include "Camera.hpp"
 #include "Light.hpp"
+#include "Material/PhongMaterial.hpp"
 #include "Primitives.hpp"
 #include <vector>
 
-class Material {
-public:
-  Material() = default;
+struct Material {
+  enum class Type : uint8_t {
+    Phong,
+    Nomral,
+    Depth,
+    None,
+  };
 
-  virtual auto getColor(const Point &point, const std::vector<Light> &lights,
-                        const Camera &camera) const -> Eigen::Vector3f = 0;
+  Type type = Type::None;
+  // union {
+  PhongMaterialData phong;
+  // };
 
-  virtual ~Material() = default;
+  auto sample(const Point &point, const std::vector<Light> &lights,
+              const Camera &camera) const -> Eigen::Vector3f;
+
+  static auto Phong() -> Material;
+  static auto Normal() -> Material;
+  static auto Depth() -> Material;
 };

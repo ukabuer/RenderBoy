@@ -52,19 +52,23 @@ static auto LoadTexture(const string &path, const string &baseDir,
 static auto LoadMaterial(const aiMaterial &ai_material,
                          vector<shared_ptr<Texture>> &textures,
                          const string &baseDir) -> unique_ptr<Material> {
-  auto material = make_unique<PhongMaterial>();
+  auto material = make_unique<Material>();
+  material->type = Material::Type::Phong;
+  material->phong = PhongMaterialData();
+
+  auto &data = material->phong;
 
   aiColor3D diffuse;
   ai_material.Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
-  material->diffuseColor = {diffuse.r, diffuse.g, diffuse.b};
+  data.diffuseColor = {diffuse.r, diffuse.g, diffuse.b};
 
   aiColor3D specular;
   ai_material.Get(AI_MATKEY_COLOR_SPECULAR, specular);
-  material->specularColor = {specular.r, specular.g, specular.b};
+  data.specularColor = {specular.r, specular.g, specular.b};
 
   aiColor3D ambient;
   ai_material.Get(AI_MATKEY_COLOR_AMBIENT, ambient);
-  material->ambientColor = {ambient.r, ambient.g, ambient.b};
+  data.ambientColor = {ambient.r, ambient.g, ambient.b};
 
   aiString path;
 
@@ -72,26 +76,26 @@ static auto LoadMaterial(const aiMaterial &ai_material,
       ai_material.GetTextureCount(aiTextureType_DIFFUSE) > 0;
   if (hasDiffuseMap) {
     ai_material.GetTexture(aiTextureType_DIFFUSE, 0, &path);
-    material->diffuseMap = LoadTexture(path.C_Str(), baseDir, textures);
+    data.diffuseMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
   const auto hasSpecularMap =
       ai_material.GetTextureCount(aiTextureType_SPECULAR) > 0;
   if (hasSpecularMap) {
     ai_material.GetTexture(aiTextureType_SPECULAR, 0, &path);
-    material->specularMap = LoadTexture(path.C_Str(), baseDir, textures);
+    data.specularMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
   const auto hasAmbientMap =
       ai_material.GetTextureCount(aiTextureType_AMBIENT) > 0;
   if (hasAmbientMap) {
     ai_material.GetTexture(aiTextureType_AMBIENT, 0, &path);
-    material->ambientMap = LoadTexture(path.C_Str(), baseDir, textures);
+    data.ambientMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
-  ai_material.Get(AI_MATKEY_SHININESS, material->shininess);
-  if (material->shininess == 0.f) {
-    material->shininess = 50.f;
+  ai_material.Get(AI_MATKEY_SHININESS, data.shininess);
+  if (data.shininess == 0.f) {
+    data.shininess = 50.f;
   }
 
   return material;
@@ -139,7 +143,7 @@ static auto LoadMesh(const aiMesh &ai_mesh,
   }
 
   auto material = materials.empty() || !ai_mesh.HasNormals()
-                      ? make_shared<DepthMaterial>()
+                      ? make_shared<Material>()
                       : materials[ai_mesh.mMaterialIndex];
   auto geometry = make_unique<Geometry>();
   geometry->vertices = move(vertices);

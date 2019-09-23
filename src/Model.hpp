@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Material/Texture.hpp"
 #include "Mesh.hpp"
 #include <memory>

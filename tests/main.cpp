@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
-#include "Camera/PerspectiveCamera.hpp"
+#include "Camera.hpp"
 #include "Frame.hpp"
 
 TEST(Camera, SetColor) {
   const auto width = 800u;
   const auto height = 600u;
-  auto camera = PerspectiveCamera(60.f, width, height, 0.1f, 1000.f);
+  auto camera = Camera(width, height, Camera::Type::Perspective);
+  camera.setProjection(60.f, 0.01f, 1000.f);
 
   auto &frame = camera.getFrame();
 

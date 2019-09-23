@@ -1,16 +1,13 @@
 #pragma once
 #include "Light.hpp"
-#include "Material/Material.hpp"
+#include "Primitives.hpp"
+#include "Camera.hpp"
 #include "Material/Texture.hpp"
 #include <Eigen/Core>
 #include <memory>
 #include <vector>
 
-class PhongMaterial : public Material {
-public:
-  auto getColor(const Point &point, const std::vector<Light> &Lights,
-                const Camera &camera) const -> Eigen::Vector3f override;
-
+struct PhongMaterialData {
   Eigen::Vector3f diffuseColor;
   Eigen::Vector3f specularColor;
   Eigen::Vector3f ambientColor;
@@ -21,3 +18,6 @@ public:
   std::shared_ptr<Texture> specularMap;
   std::shared_ptr<Texture> bumpMap;
 };
+
+auto SamplePhongMaterial(const Point &point, const std::vector<Light> &lights,
+                         const Camera &camera, const PhongMaterialData &data) -> Eigen::Vector3f;
