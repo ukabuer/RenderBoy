@@ -2,6 +2,7 @@
 #include "Material/DepthMaterial.hpp"
 #include "Material/NormalMaterial.hpp"
 #include "Material/PhongMaterial.hpp"
+#include "Material/GouraudMaterial.hpp"
 #include <memory>
 
 using namespace std;
@@ -22,7 +23,12 @@ auto Material::Depth() -> Material {
 auto Material::Phong() -> Material {
   auto material = Material();
   material.type = Type::Phong;
-  auto data = make_unique<PhongMaterialData>();
+  return material;
+}
+
+auto Material::Gouraud() -> Material {
+  auto material = Material();
+  material.type = Type::Gouraud;
   return material;
 }
 
@@ -34,6 +40,8 @@ auto Material::sample(const Vertex &v, const std::vector<Light> &lights,
   case Type::Nomral:
     return SampleNormalMaterial(v);
   case Type::Phong:
+    return SampleGouraudMaterial(v, lights, camera, gouraud);
+  case Type::Gouraud:
     return SamplePhongMaterial(v, lights, camera, phong);
   default:
     return Vector3f::Zero();
