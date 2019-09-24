@@ -115,15 +115,17 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
     auto &vertices = geo->vertices;
     auto &indices = geo->indices;
 
-    // transform
     for (auto &vertex : vertices) {
+      // transform
       Eigen::Vector4f value =
           matrix * Vector4f(vertex.position[0], vertex.position[1],
                             vertex.position[2], 1.0f);
+      vertex.depth = value[2] / value[3];
+
+      // project to screen coords
       vertex.screen = {
           static_cast<int>((value[0] / value[3] + 1.f) * width / 2.0f),
           static_cast<int>((value[1] / value[3] + 1.f) * height / 2.0f)};
-      vertex.depth = value[2] / value[3];
     }
 
     auto &material = *mesh.material;

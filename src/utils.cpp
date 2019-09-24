@@ -65,7 +65,7 @@ auto RenderConfig::Load(const string &filename) -> RenderConfig {
   }
 
   auto modelConfigs = config->get_table_array("models");
-  if (!cameraConfig) {
+  if (!modelConfigs) {
     throw cpptoml::parse_exception("no models");
   }
 

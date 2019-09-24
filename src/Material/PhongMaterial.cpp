@@ -39,10 +39,11 @@ auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
       }
 
       const auto HN = H.dot(N);
-      if (HN != 0.f) {
+      if (HN > 0.f) {
         const auto specularFactor = std::pow(HN, data.shininess);
         specular = specularFactor * specularColor.cwiseProduct(light.color);
       }
+
       result += diffuse + specular;
     }
   }

@@ -1,6 +1,6 @@
 #include "Camera.hpp"
-#include "Eigen/src/Core/Matrix.h"
 #include "Geometry.hpp"
+#include <Eigen/Core>
 #include <Eigen/Geometry>
 
 using namespace Eigen;
