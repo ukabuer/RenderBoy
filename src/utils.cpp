@@ -52,15 +52,16 @@ auto RenderConfig::Load(const string &filename) -> RenderConfig {
       light.position = {static_cast<float>(position[0]),
                         static_cast<float>(position[1]),
                         static_cast<float>(position[2])};
-    } if (type == "ambient") {
-      light.type = Light::Type::Ambient;
-      light.intensity = static_cast<float>(lightConfig->get_as<double>("intensity")
-                          .value_or(0.2));
     }
+    if (type == "ambient") {
+      light.type = Light::Type::Ambient;
+    }
+    light.intensity = static_cast<float>(
+        lightConfig->get_as<double>("intensity").value_or(0.2));
     auto color = config->get_array_of<double>("color").value_or(
-          initializer_list<double>{1.0, 1.0, 1.0});
+        initializer_list<double>{1.0, 1.0, 1.0});
     light.color = {static_cast<float>(color[0]), static_cast<float>(color[1]),
-                    static_cast<float>(color[2])};
+                   static_cast<float>(color[2])};
     scene.lights.emplace_back(light);
   }
 
