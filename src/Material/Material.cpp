@@ -40,9 +40,9 @@ auto Material::sample(const Vertex &v, const std::vector<Light> &lights,
   case Type::Nomral:
     return SampleNormalMaterial(v);
   case Type::Phong:
-    return SampleGouraudMaterial(v, lights, camera, gouraud);
-  case Type::Gouraud:
     return SamplePhongMaterial(v, lights, camera, phong);
+  case Type::Gouraud:
+    return SampleGouraudMaterial(v, lights, camera, gouraud);
   default:
     return Vector3f::Zero();
   }

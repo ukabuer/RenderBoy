@@ -93,6 +93,13 @@ static auto LoadMaterial(const aiMaterial &ai_material,
     data.ambientMap = LoadTexture(path.C_Str(), baseDir, textures);
   }
 
+  const auto hasNormalMap =
+      ai_material.GetTextureCount(aiTextureType_NORMALS) > 0;
+  if (hasNormalMap) {
+    ai_material.GetTexture(aiTextureType_NORMALS, 0, &path);
+    data.normalMap = LoadTexture(path.C_Str(), baseDir, textures);
+  }
+
   ai_material.Get(AI_MATKEY_SHININESS, data.shininess);
   if (data.shininess == 0.f) {
     data.shininess = 50.f;
@@ -115,6 +122,16 @@ static auto LoadMesh(const aiMesh &ai_mesh,
     for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
       vertices[i].normals = {ai_mesh.mNormals[i].x, ai_mesh.mNormals[i].y,
                              ai_mesh.mNormals[i].z};
+    }
+  }
+
+  if (ai_mesh.HasTangentsAndBitangents()) {
+    for (auto i = 0u; i < ai_mesh.mNumVertices; i++) {
+      vertices[i].T = {ai_mesh.mTangents[i].x, ai_mesh.mTangents[i].y,
+                       ai_mesh.mTangents[i].z};
+
+      vertices[i].B = {ai_mesh.mBitangents[i].x, ai_mesh.mBitangents[i].y,
+                       ai_mesh.mBitangents[i].z};
     }
   }
 

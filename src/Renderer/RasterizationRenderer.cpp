@@ -80,6 +80,8 @@ static void RenderTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
                   (w0 * v0.uv[1] + w1 * v1.uv[1] + w2 * v2.uv[1]) / sum};
           p.normals =
               (w0 * v0.normals + w1 * v1.normals + w2 * v2.normals) / sum;
+          p.T = (w0 * v0.T + w1 * v1.T + w2 * v2.T) / sum;
+          p.B = (w0 * v0.B + w1 * v1.B + w2 * v2.B) / sum;
           p.position =
               (w0 * v0.position + w1 * v1.position + w2 * v2.position) / sum;
           const auto color = material.sample(p, lights, camera);

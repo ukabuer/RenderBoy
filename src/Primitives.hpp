@@ -8,6 +8,8 @@ struct Vertex {
   std::array<float, 2> uv = {0.f, 0.f};
   std::array<int, 2> screen = {0, 0};
   float depth = 0.0f;
+  Eigen::Vector3f T = Eigen::Vector3f::Zero();
+  Eigen::Vector3f B = Eigen::Vector3f::Zero();
 };
 
 struct Point {
