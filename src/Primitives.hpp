@@ -10,6 +10,7 @@ struct Vertex {
   float depth = 0.0f;
   Eigen::Vector3f T = Eigen::Vector3f::Zero();
   Eigen::Vector3f B = Eigen::Vector3f::Zero();
+  float homo = 0.f;
 };
 
 struct Point {

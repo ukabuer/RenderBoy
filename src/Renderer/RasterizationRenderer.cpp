@@ -25,9 +25,9 @@ static inline auto min3(int a, int b, int c) -> int {
   return c < tmp ? c : tmp;
 }
 
-static void RenderTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
-                           const Material &material,
-                           const std::vector<Light> &lights, Camera &camera) {
+static void TraverseTriangle(const Vertex &v0, const Vertex &v1,
+                             const Vertex &v2, const Material &material,
+                             const std::vector<Light> &lights, Camera &camera) {
   const auto width = static_cast<int>(camera.getWidth());
   const auto height = static_cast<int>(camera.getHeight());
 
@@ -60,38 +60,43 @@ static void RenderTriangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
   // Rasterize
   for (p.screen[1] = minY; p.screen[1] <= maxY; p.screen[1]++) {
     // Determine barycentric coordinates
-    auto w0 = w0_row;
-    auto w1 = w1_row;
-    auto w2 = w2_row;
+    Vector3i weight = {w0_row, w1_row, w2_row};
 
-    const auto sum = w0 + w1 + w2;
+    auto sum = weight[0] + weight[1] + weight[2];
     for (p.screen[0] = minX; p.screen[0] <= maxX; p.screen[0]++) {
       // If p is on or inside all edges, render pixel.
-      if (w0 >= 0 && w1 >= 0 && w2 >= 0 && sum != 0) {
-        p.depth = -(w0 * v0.depth + w1 * v1.depth + w2 * v2.depth) / sum;
+      if (weight[0] >= 0 && weight[1] >= 0 && weight[2] >= 0 && sum != 0) {
+        Vector3f clip = {static_cast<float>(weight[0]) / v0.homo / sum,
+                         static_cast<float>(weight[1]) / v1.homo / sum,
+                         static_cast<float>(weight[2]) / v2.homo / sum};
+        clip = clip / (clip[0] + clip[1] + clip[2]);
+        p.depth =
+            -(clip[0] * v0.depth + clip[1] * v1.depth + clip[2] * v2.depth);
         const auto idx = static_cast<size_t>(p.screen[0] + p.screen[1] * width);
         if (p.depth < -1.f || p.depth > 1.f) {
           continue;
         }
+
         auto &zbuffer = camera.getFrame().z;
         if (p.depth > zbuffer[idx]) {
           camera.setZ(idx, p.depth);
-          p.uv = {(w0 * v0.uv[0] + w1 * v1.uv[0] + w2 * v2.uv[0]) / sum,
-                  (w0 * v0.uv[1] + w1 * v1.uv[1] + w2 * v2.uv[1]) / sum};
-          p.normals =
-              (w0 * v0.normals + w1 * v1.normals + w2 * v2.normals) / sum;
-          p.T = (w0 * v0.T + w1 * v1.T + w2 * v2.T) / sum;
-          p.B = (w0 * v0.B + w1 * v1.B + w2 * v2.B) / sum;
-          p.position =
-              (w0 * v0.position + w1 * v1.position + w2 * v2.position) / sum;
+          p.uv = {
+              (clip[0] * v0.uv[0] + clip[1] * v1.uv[0] + clip[2] * v2.uv[0]),
+              (clip[0] * v0.uv[1] + clip[1] * v1.uv[1] + clip[2] * v2.uv[1])};
+          p.normals = (clip[0] * v0.normals + clip[1] * v1.normals +
+                       clip[2] * v2.normals);
+          p.T = (clip[0] * v0.T + clip[1] * v1.T + clip[2] * v2.T);
+          p.B = (clip[0] * v0.B + clip[1] * v1.B + clip[2] * v2.B);
+          p.position = (clip[0] * v0.position + clip[1] * v1.position +
+                        clip[2] * v2.position);
           const auto color = material.sample(p, lights, camera);
           camera.setColor(idx, color);
         }
       }
 
-      w0 += A12;
-      w1 += A20;
-      w2 += A01;
+      weight[0] += A12;
+      weight[1] += A20;
+      weight[2] += A01;
     }
     w0_row += B12;
     w1_row += B20;
@@ -118,27 +123,24 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
     auto &indices = geo->indices;
 
     for (auto &vertex : vertices) {
-      // transform
-      Eigen::Vector4f value =
-          matrix * Vector4f(vertex.position[0], vertex.position[1],
-                            vertex.position[2], 1.0f);
+      // projection
+      Vector4f value = matrix * Vector4f(vertex.position[0], vertex.position[1],
+                                         vertex.position[2], 1.0f);
       vertex.depth = value[2] / value[3];
-
-      // project to screen coords
+      vertex.homo = value[3];
+      // map to screen coords
       vertex.screen = {
           static_cast<int>((value[0] / value[3] + 1.f) * width / 2.0f),
           static_cast<int>((value[1] / value[3] + 1.f) * height / 2.0f)};
     }
 
-    auto &material = *mesh.material;
-    const auto triangleNum = indices.size() / 3;
-    ParallelForEach(0ull, triangleNum,
-                    [&vertices, &indices, &material, &scene, &camera](auto i) {
+    ParallelForEach(0ull, indices.size() / 3,
+                    [&vertices, &indices, &mesh, &scene, &camera](auto i) {
                       i *= 3;
-                      RenderTriangle(vertices[indices[i]],
-                                     vertices[indices[i + 1]],
-                                     vertices[indices[i + 2]], material,
-                                     scene.lights, camera);
+                      TraverseTriangle(vertices[indices[i]],
+                                       vertices[indices[i + 1]],
+                                       vertices[indices[i + 2]], *mesh.material,
+                                       scene.lights, camera);
                     });
   }
 }
