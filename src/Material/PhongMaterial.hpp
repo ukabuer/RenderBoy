@@ -17,6 +17,7 @@ struct PhongMaterialData {
   std::shared_ptr<Texture> diffuseMap;
   std::shared_ptr<Texture> specularMap;
   std::shared_ptr<Texture> normalMap;
+  std::shared_ptr<Texture> aoMap;
 };
 
 auto SamplePhongMaterial(const Vertex &vertex, const std::vector<Light> &lights,

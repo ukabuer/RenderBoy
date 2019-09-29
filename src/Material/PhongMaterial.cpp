@@ -9,12 +9,6 @@ auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
     -> Eigen::Vector3f {
   Vector3f result(0.0f, 0.0f, 0.0f);
 
-  auto diffuseColor = data.diffuseColor;
-  if (data.diffuseMap) {
-    const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
-    diffuseColor = diffuseColor.cwiseProduct(sampled);
-  }
-
   Eigen::Vector3f normal = v.normals;
   if (data.normalMap) {
     Matrix3f TBN;
@@ -27,6 +21,17 @@ auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
     normal = (TBN * s.normalized()).normalized();
   }
 
+  Vector3f ao = Vector3f::Ones();
+  if (data.aoMap) {
+    ao = data.aoMap->sample(v.uv[0], v.uv[1]);
+  }
+
+  auto diffuseColor = data.diffuseColor;
+  if (data.diffuseMap) {
+    const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
+    diffuseColor = diffuseColor.cwiseProduct(sampled);
+  }
+
   auto specularColor = data.specularColor;
   if (data.specularMap) {
     const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
@@ -36,7 +41,7 @@ auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
   const Vector3f V = (camera.getPosition() - v.position).normalized();
   for (auto &light : lights) {
     if (light.type == Light::Type::Ambient) {
-      result += light.intensity * diffuseColor;
+      result += (light.intensity * diffuseColor).cwiseProduct(ao);
     } else if (light.type == Light::Type::Point) {
       const auto N = normal;
       const Vector3f distance = light.position - v.position;
