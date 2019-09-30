@@ -68,9 +68,9 @@ auto main(int argc, const char **argv) -> int {
     // render
     renderer.render(config.scene, config.camera);
 
-    auto &frame = config.camera.getFrame();
-    for (auto i = 0; i < frame.colors.size(); i++) {
-      pixels[i] = static_cast<unsigned char>(frame.colors[i] * 255.0f);
+    auto &colors = config.camera.getFrame().getColors();
+    for (auto i = 0; i < colors.size(); i++) {
+      pixels[i] = static_cast<unsigned char>(colors[i] * 255.0f);
     }
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(

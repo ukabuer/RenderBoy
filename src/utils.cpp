@@ -58,7 +58,7 @@ auto RenderConfig::Load(const string &filename) -> RenderConfig {
     }
     light.intensity = static_cast<float>(
         lightConfig->get_as<double>("intensity").value_or(0.2));
-    auto color = config->get_array_of<double>("color").value_or(
+    auto color = lightConfig->get_array_of<double>("color").value_or(
         initializer_list<double>{1.0, 1.0, 1.0});
     light.color = {static_cast<float>(color[0]), static_cast<float>(color[1]),
                    static_cast<float>(color[2])};

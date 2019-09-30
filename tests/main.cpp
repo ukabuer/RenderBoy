@@ -1,28 +1,31 @@
-#include <gtest/gtest.h>
 #include "Camera.hpp"
 #include "Frame.hpp"
+#include <Eigen/Core>
+#include <cmath>
+#include <gtest/gtest.h>
+
+using namespace Eigen;
 
 TEST(Camera, SetColor) {
   const auto width = 800u;
   const auto height = 600u;
-  auto camera = Camera(width, height, Camera::Type::Perspective);
-  camera.setProjection(60.f, 0.01f, 1000.f);
+  auto frame = Frame(width, height);
+  auto size = frame.getSize();
+  auto &colors = frame.getColors();
 
-  auto &frame = camera.getFrame();
+  frame.setColor(0, Eigen::Vector3f(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(1.0f, colors[0]);
 
-  camera.setColor(0, Eigen::Vector3f(1.0f, 0.0f, 0.0f));
-  EXPECT_EQ(1.0f, frame.colors[0]);
+  frame.setColor(799, 599, Eigen::Vector3f(1.0f, 0.0f, 0.0f));
+  EXPECT_EQ(1.0f, colors[size - 1]);
 
-  camera.setColor(799, 599, Eigen::Vector3f(1.0f, 0.0f, 0.0f));
-  EXPECT_EQ(1.0f, frame.colors[frame.colors.size() - 1]);
-
-  camera.setColor(400, 300, Eigen::Vector3f(0.0f, 1.0f, 0.0f));
+  frame.setColor(400, 300, Eigen::Vector3f(0.0f, 1.0f, 0.0f));
   const auto idx = (400 + 300 * width) * 4;
-  EXPECT_EQ(1.0f, frame.colors[idx + 1]);
-  EXPECT_EQ(1.0f, frame.colors[idx + 3]);
+  EXPECT_EQ(1.0f, colors[idx + 1]);
+  EXPECT_EQ(1.0f, colors[idx + 3]);
 }
 
-int main(int ac, char* av[]) {
+int main(int ac, char *av[]) {
   testing::InitGoogleTest(&ac, av);
   return RUN_ALL_TESTS();
 }

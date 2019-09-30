@@ -4,37 +4,36 @@
 using namespace std;
 using namespace Eigen;
 
-auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
-                         const Camera &camera, const PhongMaterialData &data)
-    -> Eigen::Vector3f {
+auto PhongMaterial::sample(const Vertex &v, const std::vector<Light> &lights,
+                           const Camera &camera) const -> Eigen::Vector3f {
   Vector3f result(0.0f, 0.0f, 0.0f);
 
   Eigen::Vector3f normal = v.normals;
-  if (data.normalMap) {
+  if (normalMap) {
     Matrix3f TBN;
     TBN.col(0) = v.T.normalized();
     TBN.col(1) = v.B.normalized();
     TBN.col(2) = v.normals.normalized();
 
-    Vector3f s = data.normalMap->sample(v.uv[0], v.uv[1]);
+    Vector3f s = normalMap->sample(v.uv[0], v.uv[1]);
     s = s * 2.0f - Vector3f::Ones();
     normal = (TBN * s.normalized()).normalized();
   }
 
   Vector3f ao = Vector3f::Ones();
-  if (data.aoMap) {
-    ao = data.aoMap->sample(v.uv[0], v.uv[1]);
+  if (aoMap) {
+    ao = aoMap->sample(v.uv[0], v.uv[1]);
   }
 
-  auto diffuseColor = data.diffuseColor;
-  if (data.diffuseMap) {
-    const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
+  auto diffuseColor = this->diffuseColor;
+  if (diffuseMap) {
+    const auto sampled = diffuseMap->sample(v.uv[0], v.uv[1]);
     diffuseColor = diffuseColor.cwiseProduct(sampled);
   }
 
-  auto specularColor = data.specularColor;
-  if (data.specularMap) {
-    const auto sampled = data.diffuseMap->sample(v.uv[0], v.uv[1]);
+  auto specularColor = this->specularColor;
+  if (specularMap) {
+    const auto sampled = diffuseMap->sample(v.uv[0], v.uv[1]);
     specularColor = specularColor.cwiseProduct(sampled);
   }
 
@@ -59,7 +58,7 @@ auto SamplePhongMaterial(const Vertex &v, const std::vector<Light> &lights,
 
       const auto HN = H.dot(N);
       if (HN > 0.f) {
-        const auto specularFactor = std::pow(HN, data.shininess);
+        const auto specularFactor = std::pow(HN, shininess);
         specular = specularFactor * specularColor.cwiseProduct(lightColor);
       }
 

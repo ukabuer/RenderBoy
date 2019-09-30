@@ -1,6 +1,6 @@
 #pragma once
 #include "Geometry.hpp"
-#include "Material/Material.hpp"
+#include "Material/AbstractMaterial.hpp"
 
 struct Mesh {
   std::shared_ptr<Geometry> geometry;

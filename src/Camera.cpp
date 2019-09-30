@@ -92,7 +92,7 @@ void Camera::setProjection(float fov, float near, float far) noexcept {
   assert(type == Type::Perspective);
 
   auto h = std::tanf(fov * PI / 360.0f) * near;
-  auto w = h * frame.aspect;
+  auto w = h * aspect;
 
   this->left = -w;
   this->right = w;
@@ -140,11 +140,4 @@ void Camera::setUp(float x, float y, float z) {
 void Camera::setUp(const Vector3f &up) {
   this->up = up;
   this->view = lookAtMatrix(position, target, up);
-}
-
-void Camera::clearFrame(const Vector3f &color, float z) {
-  for (auto i = 0ul; i < frame.size; i++) {
-    this->setZ(i, -FLT_MAX);
-    this->setColor(i, color);
-  }
 }

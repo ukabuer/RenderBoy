@@ -1,23 +1,20 @@
 #pragma once
 #include "Camera.hpp"
 #include "Light.hpp"
-#include "Material/PhongMaterial.hpp"
+#include "Material/AbstractMaterial.hpp"
 #include "Primitives.hpp"
 
-struct GouraudMaterialData {
-  Eigen::Vector3f color = {1.f, 0.6f, 0.f};
-};
+class GouraudMaterial : public Material {
+public:
+  auto sample(const Vertex &v, const std::vector<Light> &lights,
+              const Camera &camera) const -> Eigen::Vector3f final {
+    Eigen::Vector3f color = Eigen::Vector3f::Zero();
 
-inline auto SampleGouraudMaterial(const Vertex &v,
-                                  const std::vector<Light> &lights,
-                                  const Camera &camera,
-                                  const GouraudMaterialData &data) {
-  Eigen::Vector3f color = Eigen::Vector3f::Zero();
+    for (auto &light : lights) {
+      if (light.type != Light::Type::Point) {
+        continue;
+      }
 
-  for (auto &light : lights) {
-    if (light.type == Light::Type::Ambient) {
-      color += light.intensity * data.color;
-    } else if (light.type == Light::Type::Point) {
       auto lightDir = (light.position - v.position).normalized();
       auto intensity = std::max(0.f, v.normals.dot(lightDir));
       if (intensity > .85) {
@@ -33,9 +30,12 @@ inline auto SampleGouraudMaterial(const Vertex &v,
       } else {
         intensity = 0.f;
       }
-      color += data.color * intensity;
+      color += baseColor * intensity;
     }
+
+    return color;
   }
 
-  return color;
-}
+private:
+  Eigen::Vector3f baseColor;
+};
