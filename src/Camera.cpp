@@ -2,6 +2,7 @@
 #include "Geometry.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <cmath>
 
 using namespace Eigen;
 
@@ -91,7 +92,7 @@ void Camera::setProjection(float left, float right, float top, float bottom,
 void Camera::setProjection(float fov, float near, float far) noexcept {
   assert(type == Type::Perspective);
 
-  auto h = std::tanf(fov * PI / 360.0f) * near;
+  auto h = std::tan(fov * PI / 360.0f) * near;
   auto w = h * aspect;
 
   this->left = -w;

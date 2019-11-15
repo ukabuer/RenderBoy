@@ -136,7 +136,7 @@ void RasterizationRenderer::render(const Scene &scene, Camera &camera) {
       return false;
     };
 
-    ParallelForEach(0ULL, indices.size() / 3,
+    ParallelForEach(0UL, indices.size() / 3,
                     [&vertices, &indices, &shader, &frame](auto i) {
                       i *= 3;
                       TraverseTriangle(

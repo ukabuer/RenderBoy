@@ -7,19 +7,11 @@ endif()
 
 project(RenderBoy)
 
-set(default_build_type "Release")
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-      STRING "Choose the type of build." FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
-find_package(SFML CONFIG REQUIRED graphics)
+find_package(glad CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_path(STB_IMAGE_INCLUDE_DIR stb_image.h)
@@ -42,9 +34,10 @@ target_sources(RenderBoy
 
 target_link_libraries(RenderBoy
   PRIVATE
-    sfml-graphics
+    glfw
+    glad::glad
     Eigen3::Eigen
-    ${ASSIMP_LIBRARIES}
+    assimp::assimp
 )
 target_include_directories(RenderBoy
   PRIVATE

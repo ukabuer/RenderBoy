@@ -2,6 +2,7 @@
 #include "Primitives.hpp"
 #include <Eigen/Core>
 #include <vector>
+#include <memory>
 
 const auto PI = atan(1.0f) * 4.0f;
 

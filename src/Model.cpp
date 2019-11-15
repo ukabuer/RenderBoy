@@ -4,8 +4,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#define STB_IMAGE_IMPLEMENTATION
 #include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <string>
 #include <utility>
