@@ -1,14 +1,12 @@
 #pragma once
-#include "Material/AbstractMaterial.hpp"
 #include "Primitives.hpp"
 #include <array>
 
-class DepthMaterial : public Material {
+class DepthMaterial {
 public:
-  auto sample(const Vertex &vertex, const std::vector<Light> &lights,
-              const Camera &camera) const -> Eigen::Vector3f override {
-    const auto gray = (vertex.depth + 1.0f) / 2.0f;
+  [[nodiscard]] auto sample(float depth) const -> Eigen::Vector4f {
+    const auto gray = (depth + 1.0f) / 2.0f;
 
-    return {gray, gray, gray};
+    return {gray, gray, gray, 1.0f};
   }
 };

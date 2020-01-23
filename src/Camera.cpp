@@ -69,76 +69,50 @@ static auto lookAtMatrix(const Vector3f &pos, const Vector3f &target,
   return m;
 }
 
-void Camera::setProjection(float left, float right, float top, float bottom,
-                           float near, float far) noexcept {
-  this->left = left;
-  this->right = right;
-  this->top = top;
-  this->bottom = bottom;
-  this->near = near;
-  this->far = far;
-  switch (type) {
-  case Type::Perspective:
-    projection = perspective(left, right, top, bottom, near, far);
+void Camera::setProjection(Projection projection, float left, float right,
+                           float top, float bottom, float near,
+                           float far) noexcept {
+  Matrix4f p;
+  switch (projection) {
+  case Projection::Perspective:
+    p = perspective(left, right, top, bottom, near, far);
+    projection_matrix_for_culling = p;
+
+    p(2, 2) = -1;        // lim(far->inf) = -1
+    p(3, 2) = -2 * near; // lim(far->inf) = -2*near
+
     break;
-  case Type::Orthographic:
-    projection = orthographic(left, right, top, bottom, near, far);
-    break;
-  default:
+  case Projection::Orthographic:
+    p = orthographic(left, right, top, bottom, near, far);
+    projection_matrix_for_culling = p;
     break;
   }
+
+  projection_matrix = p;
+  z_near = near;
+  z_far = far;
 }
 
-void Camera::setProjection(float fov, float near, float far) noexcept {
-  assert(type == Type::Perspective);
+void Camera::setProjection(float fov, float aspect, float near, float far,
+                           Fov direction) noexcept {
+  float w, h;
+  auto s = std::tan(fov * PI / 360.0f) * near;
 
-  auto h = std::tan(fov * PI / 360.0f) * near;
-  auto w = h * aspect;
+  if (direction == Fov::VERTICAL) {
+    w = s * aspect;
+    h = s;
+  } else {
+    w = s;
+    h = s / aspect;
+  };
 
-  this->left = -w;
-  this->right = w;
-  this->top = h;
-  this->bottom = -h;
-  this->near = near;
-  this->far = far;
-
-  projection = perspective(-w, w, h, -h, near, far);
+  this->setProjection(Projection::Perspective, -w, w, h, -h, near, far);
 }
 
 void Camera::lookAt(const Eigen::Vector3f &position, const Eigen::Vector3f &target, const Eigen::Vector3f &up) noexcept {
-  this->position = position;
-  this->target = target;
-  this->up = up;
-
-  this->view = lookAtMatrix(position, target, up);
+  this->view_matrix = lookAtMatrix(position, target, up);
 }
 
-void Camera::setPosition(float x, float y, float z) {
-  this->position = {x, y, z};
-  this->view = lookAtMatrix(position, target, up);
-}
-
-void Camera::setPosition(const Vector3f &position) {
-  this->position = position;
-  this->view = lookAtMatrix(position, target, up);
-}
-
-void Camera::setTarget(float x, float y, float z) {
-  this->target = {x, y, z};
-  this->view = lookAtMatrix(position, target, up);
-}
-
-void Camera::setTarget(const Vector3f &target) {
-  this->target = target;
-  this->view = lookAtMatrix(position, target, up);
-}
-
-void Camera::setUp(float x, float y, float z) {
-  this->up = {x, y, z};
-  this->view = lookAtMatrix(position, target, up);
-}
-
-void Camera::setUp(const Vector3f &up) {
-  this->up = up;
-  this->view = lookAtMatrix(position, target, up);
+void Camera::setModelMatrix(const Eigen::Matrix4f &view) noexcept {
+  this->view_matrix = view;
 }

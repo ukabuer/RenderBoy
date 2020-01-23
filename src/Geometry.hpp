@@ -1,21 +1,16 @@
 #pragma once
 #include "Primitives.hpp"
 #include <Eigen/Core>
-#include <vector>
+#include <functional>
 #include <memory>
+#include <vector>
 
-const auto PI = atan(1.0f) * 4.0f;
+const auto PI = atanf(1.0f) * 4.0f;
 
 struct Geometry {
+  std::vector<Vertex> buffers;
   std::vector<uint32_t> indices;
-  std::vector<Vertex> vertices;
-
-  static auto Box(float width = 1.0f, float height = 1.0f, float depth = 1.0f)
-      -> std::unique_ptr<Geometry>;
-
-  static auto
-  Sphere(float radius, uint32_t subdivisionsAxis, uint32_t subdivisionsHeight,
-         float startLatitudeInRadians = 0, float endLatitudeInRadians = PI,
-         float startLongitudeInRadians = 0,
-         float endLongitudeInRadians = 2 * PI) -> std::unique_ptr<Geometry>;
+  uint32_t vertex_count = 0;
+  uint32_t index_count = 0;
+  // TODO: material
 };

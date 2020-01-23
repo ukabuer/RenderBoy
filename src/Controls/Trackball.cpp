@@ -1,4 +1,4 @@
-#include "CameraControls/OrbitControl.hpp"
+#include "Controls/Trackball.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -51,24 +51,27 @@ static auto calculatePan(const Vector3f &from,
   return offsetX + offsetY;
 }
 
-void OrbitController::update(int x, int y) {
+void TrackballControl::update(int x, int y) {
   auto deltaX = x - lastX;
   auto deltaY = y - lastY;
 
-  if (isZoom) {
-    const auto offset = calculateZoom(camera.getPosition(), camera.getTarget(), zoomDelta);
-    camera.setPosition(camera.getPosition() + offset);
-  }
-
-  if (isOrbit) {
-    const auto offset = calculateRotate(camera.getTarget(), camera.getPosition(), deltaX, deltaY);
-    camera.setPosition(camera.getTarget() + offset);
-  }
-
-  if (isPan) {
-    const auto pan = calculatePan(camera.getPosition(), camera.getTarget(), camera.getUp(), deltaX, deltaY);
-    camera.setTarget(camera.getTarget() + pan);
-  }
+  //  if (isZoom) {
+  //    const auto offset = calculateZoom(camera.getPosition(),
+  //    camera.getTarget(), zoomDelta); camera.setPosition(camera.getPosition()
+  //    + offset);
+  //  }
+  //
+  //  if (isOrbit) {
+  //    const auto offset = calculateRotate(camera.getTarget(),
+  //    camera.getPosition(), deltaX, deltaY);
+  //    camera.setPosition(camera.getTarget() + offset);
+  //  }
+  //
+  //  if (isPan) {
+  //    const auto pan = calculatePan(camera.getPosition(), camera.getTarget(),
+  //    camera.getUp(), deltaX, deltaY); camera.setTarget(camera.getTarget() +
+  //    pan);
+  //  }
 
   lastX = x;
   lastY = y;

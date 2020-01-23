@@ -2,17 +2,17 @@
 #include "Camera.hpp"
 #include "Geometry.hpp"
 
-class OrbitController {
+class TrackballControl {
 public:
-  OrbitController(Camera &camera) : camera(camera) {}
+  explicit TrackballControl(Camera &camera) : camera(camera) {}
 
   void onMouseDown(bool isLeft, int x, int y) {
     if (isLeft) {
-    this->isOrbit = true;
+      this->isOrbit = true;
     } else {
-    this->isPan = true;
+      this->isPan = true;
     }
-      this->lastX = x;
+    this->lastX = x;
     this->lastY = y;
   }
 

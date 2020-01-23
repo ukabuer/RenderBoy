@@ -7,13 +7,6 @@
 #include <thread>
 #include <vector>
 
-struct RenderConfig {
-  Scene scene;
-  Camera camera;
-
-  static auto Load(const std::string &filename) -> RenderConfig;
-};
-
 template <typename T, typename Fn>
 void ParallelForEach(T begin, T end, const Fn &callback) {
   auto threads = std::vector<std::thread>();
