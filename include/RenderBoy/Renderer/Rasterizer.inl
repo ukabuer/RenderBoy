@@ -1,5 +1,6 @@
-#include "Rasterizer.hpp"
-#include "utils.hpp"
+#pragma once
+#include <RenderBoy/Renderer/Rasterizer.hpp>
+#include <RenderBoy/utils.hpp>
 #include <tuple>
 #include <utility>
 

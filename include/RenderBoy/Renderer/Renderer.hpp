@@ -1,6 +1,7 @@
 #pragma once
-#include "Camera.hpp"
-#include "Model.hpp"
+#include <RenderBoy/Camera.hpp>
+#include <RenderBoy/Frame.hpp>
+#include <RenderBoy/Model.hpp>
 
 class Renderer {
 public:

@@ -1,5 +1,5 @@
 #pragma once
-#include "Camera.hpp"
+#include "../../include/RenderBoy/Camera.hpp"
 #include "Light.hpp"
 #include "Material/AbstractMaterial.hpp"
 #include "Primitives.hpp"

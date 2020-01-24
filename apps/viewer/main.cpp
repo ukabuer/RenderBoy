@@ -1,6 +1,5 @@
-#include "Controls/Trackball.hpp"
-#include "Renderer/RasterizationRenderer.hpp"
-#include "utils.hpp"
+#include <RenderBoy/Controls/Trackball.hpp>
+#include <RenderBoy/Renderer/RasterizationRenderer.hpp>
 // clang-format off
 #include <glad/glad.h>
 // clang-format on
@@ -8,7 +7,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
-#include "Model.hpp"
+#include <RenderBoy/Model.hpp>
 
 using namespace std;
 using namespace Eigen;

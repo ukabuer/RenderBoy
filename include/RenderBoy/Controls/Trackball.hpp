@@ -1,6 +1,6 @@
 #pragma once
-#include "Camera.hpp"
-#include "Geometry.hpp"
+#include <RenderBoy/Camera.hpp>
+#include <RenderBoy/Geometry.hpp>
 
 class TrackballControl {
 public:

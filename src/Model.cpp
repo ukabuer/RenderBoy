@@ -1,4 +1,4 @@
-#include "Model.hpp"
+#include "RenderBoy/Model.hpp"
 #include "Material/DepthMaterial.hpp"
 #include "Material/PhongMaterial.hpp"
 #include <iostream>

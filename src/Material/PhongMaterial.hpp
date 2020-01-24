@@ -1,9 +1,9 @@
 #pragma once
-#include "Camera.hpp"
+#include "../../include/RenderBoy/Camera.hpp"
 #include "Light.hpp"
 #include "Material/AbstractMaterial.hpp"
 #include "Material/Texture.hpp"
-#include "Primitives.hpp"
+#include "RenderBoy/Primitive.hpp"
 #include <Eigen/Core>
 #include <memory>
 #include <vector>

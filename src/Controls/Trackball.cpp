@@ -1,4 +1,4 @@
-#include "Controls/Trackball.hpp"
+#include "RenderBoy/Controls/Trackball.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 

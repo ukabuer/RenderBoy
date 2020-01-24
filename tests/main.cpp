@@ -1,5 +1,5 @@
-#include "Camera.hpp"
-#include "Frame.hpp"
+#include "../include/RenderBoy/Camera.hpp"
+#include "../include/RenderBoy/Frame.hpp"
 #include <Eigen/Core>
 #include <cmath>
 #include <gtest/gtest.h>

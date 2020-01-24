@@ -1,6 +1,5 @@
 #pragma once
-#include "Geometry.hpp"
-#include "Material/AbstractMaterial.hpp"
+#include "RenderBoy/Geometry.hpp"
 
 struct Mesh {
   std::vector<Geometry> geometries;

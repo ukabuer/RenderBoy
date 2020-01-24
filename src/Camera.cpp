@@ -1,7 +1,7 @@
-#include "Camera.hpp"
-#include "Geometry.hpp"
+#include "RenderBoy/Geometry.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <RenderBoy/Camera.hpp>
 #include <cmath>
 
 using namespace Eigen;

@@ -1,5 +1,5 @@
 #pragma once
-#include "Primitives.hpp"
+#include "RenderBoy/Primitive.hpp"
 #include <array>
 
 class DepthMaterial {

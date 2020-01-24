@@ -1,6 +1,6 @@
 #pragma once
-#include "Primitives.hpp"
 #include <Eigen/Core>
+#include <RenderBoy/Primitive.hpp>
 #include <functional>
 #include <memory>
 #include <vector>

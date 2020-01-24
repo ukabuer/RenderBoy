@@ -30,9 +30,9 @@ public:
 
   auto getZ(size_t idx) const -> float { return z[idx]; }
 
-  void setZ(size_t idx, float z) { this->z[idx] = z; }
+  void setZ(size_t idx, float _z) { this->z[idx] = _z; }
 
-  void setZ(uint32_t x, uint32_t y, float z) { this->z[x + y * width] = z; }
+  void setZ(uint32_t x, uint32_t y, float _z) { this->z[x + y * width] = _z; }
 
   auto getColor(size_t idx) const -> Eigen::Vector4f {
     idx *= 4;
@@ -54,9 +54,9 @@ public:
   }
 
   void clear(const Eigen::Vector4f &color = {0.f, 0.f, 0.f, 1.0f},
-             float z = -FLT_MAX) {
+             float _z = -FLT_MAX) {
     for (auto i = 0ul; i < size; i++) {
-      this->setZ(i, -FLT_MAX);
+      this->setZ(i, _z);
       this->setColor(i, color);
     }
   }

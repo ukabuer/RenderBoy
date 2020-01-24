@@ -1,7 +1,7 @@
 #pragma once
 #include "Eigen/Core"
-#include "Rasterizer.inl"
-#include "Renderer/Renderer.hpp"
+#include <RenderBoy/Renderer/Rasterizer.inl>
+#include <RenderBoy/Renderer/Renderer.hpp>
 #include <functional>
 #include <vector>
 
