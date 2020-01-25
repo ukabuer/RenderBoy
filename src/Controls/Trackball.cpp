@@ -5,11 +5,14 @@
 using namespace std;
 using namespace Eigen;
 
+namespace RB {
+
 static auto clamp(float f, float min, float max) noexcept -> float {
   return f < min ? min : (f > max ? max : f);
 }
 
-static auto calculateZoom(const Vector3f &from, const Vector3f &to, float zoomDelta) {
+static auto calculateZoom(const Vector3f &from, const Vector3f &to,
+                          float zoomDelta) {
   const auto factor = 0.1f;
   const Vector3f direction = to - from;
   return zoomDelta * factor * direction;
@@ -77,3 +80,5 @@ void TrackballControl::update(int x, int y) {
   lastY = y;
   zoomDelta = 0.f;
 }
+
+} // namespace RB

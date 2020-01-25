@@ -2,6 +2,8 @@
 #include <RenderBoy/Camera.hpp>
 #include <RenderBoy/Geometry.hpp>
 
+namespace RB {
+
 class TrackballControl {
 public:
   explicit TrackballControl(Camera &camera) : camera(camera) {}
@@ -53,3 +55,5 @@ private:
 
   void update(int x, int y);
 };
+
+} // namespace RB

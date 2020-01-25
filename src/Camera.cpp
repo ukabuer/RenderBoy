@@ -6,6 +6,8 @@
 
 using namespace Eigen;
 
+namespace RB {
+
 static auto perspective(float left, float right, float top, float bottom,
                         float near, float far) -> Matrix4f {
   Matrix4f m = Matrix4f::Zero();
@@ -45,7 +47,7 @@ static auto orthographic(float left, float right, float top, float bottom,
 }
 
 static auto lookAtMatrix(const Vector3f &pos, const Vector3f &target,
-                 const Vector3f &up) -> Matrix4f {
+                         const Vector3f &up) -> Matrix4f {
   Matrix4f m = Matrix4f::Zero();
 
   Vector3f zAxis = (pos - target).normalized();
@@ -109,10 +111,14 @@ void Camera::setProjection(float fov, float aspect, float near, float far,
   this->setProjection(Projection::Perspective, -w, w, h, -h, near, far);
 }
 
-void Camera::lookAt(const Eigen::Vector3f &position, const Eigen::Vector3f &target, const Eigen::Vector3f &up) noexcept {
+void Camera::lookAt(const Eigen::Vector3f &position,
+                    const Eigen::Vector3f &target,
+                    const Eigen::Vector3f &up) noexcept {
   this->view_matrix = lookAtMatrix(position, target, up);
 }
 
 void Camera::setModelMatrix(const Eigen::Matrix4f &view) noexcept {
   this->view_matrix = view;
 }
+
+} // namespace RB

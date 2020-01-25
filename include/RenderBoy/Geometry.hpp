@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 
+namespace RB {
+
 const auto PI = atanf(1.0f) * 4.0f;
 
 struct Geometry {
@@ -14,3 +16,5 @@ struct Geometry {
   uint32_t index_count = 0;
   // TODO: material
 };
+
+} // namespace RB

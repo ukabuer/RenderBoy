@@ -1,4 +1,4 @@
-#include "RenderBoy/Renderer/RasterizationRenderer.hpp"
+#include "RasterizationRenderer.hpp"
 #include "Material/DepthMaterial.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -8,7 +8,10 @@
 using namespace std;
 using namespace Eigen;
 
-Frame &RasterizationRenderer::render(const Model &model, const Camera &camera) {
+namespace RB {
+
+const Frame &RasterizationRenderer::render(const Model &model,
+                                           const Camera &camera) {
   struct Uniforms {
     Matrix4f matrix;
     DepthMaterial material;
@@ -79,3 +82,5 @@ Frame &RasterizationRenderer::render(const Model &model, const Camera &camera) {
 
   return frame;
 }
+
+} // namespace RB

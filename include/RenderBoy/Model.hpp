@@ -3,15 +3,10 @@
 #include <memory>
 #include <string>
 
-class Model {
+namespace RB {
 
-public:
-  std::string dir;
+struct Model {
   std::vector<Mesh> meshes;
-  std::vector<std::vector<unsigned char>> buffers;
-  std::vector<std::vector<uint32_t>> indices;
-  //  std::vector<Texture> textures;
-  //  std::vector<std::shared_ptr<Material>> materials = {};
-
-  auto loadGLTF(const std::string &filepath) -> const Model &;
 };
+
+} // namespace RB

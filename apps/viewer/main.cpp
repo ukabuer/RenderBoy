@@ -1,5 +1,4 @@
 #include <RenderBoy/Controls/Trackball.hpp>
-#include <RenderBoy/Renderer/RasterizationRenderer.hpp>
 // clang-format off
 #include <glad/glad.h>
 // clang-format on
@@ -7,10 +6,12 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
-#include <RenderBoy/Model.hpp>
+#include <RenderBoy/ModelLoader.hpp>
+#include <RenderBoy/Renderer.hpp>
 
 using namespace std;
 using namespace Eigen;
+using namespace RB;
 
 constexpr const char *vertex_shader_text =
     "#version 330 core\n"
@@ -137,11 +138,11 @@ int main(int argc, const char **argv) {
   auto textureLocation = glGetUniformLocation(program, "u_texture");
   glUniform1i(textureLocation, 0);
 
-  Model model{};
-  model.loadGLTF(argv[1]);
+  ModelLoader loader((string(argv[1])));
+  auto model = loader.load();
 
-  auto renderer = RasterizationRenderer();
-  renderer.setFrame(width, height);
+  Renderer renderer(Renderer::Type::CPURasterizer);
+  renderer.set_frame(width, height);
 
   Camera camera{};
   camera.setProjection(45.0f,

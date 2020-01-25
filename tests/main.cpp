@@ -1,31 +1,27 @@
-#include "../include/RenderBoy/Camera.hpp"
-#include "../include/RenderBoy/Frame.hpp"
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
 #include <Eigen/Core>
+#include <RenderBoy/Frame.hpp>
 #include <cmath>
-#include <gtest/gtest.h>
 
 using namespace Eigen;
+using namespace RB;
 
-TEST(Camera, SetColor) {
-  const auto width = 800u;
-  const auto height = 600u;
+TEST_CASE("Frame", "SetColor") {
+  const auto width = 800;
+  const auto height = 600;
   auto frame = Frame(width, height);
   auto size = frame.getSize();
   auto &colors = frame.getColors();
 
-  frame.setColor(0, Eigen::Vector3f(1.0f, 0.0f, 0.0f));
-  EXPECT_EQ(1.0f, colors[0]);
+  frame.setColor(0, Eigen::Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
+  REQUIRE(1.0f == colors[0]);
 
-  frame.setColor(799, 599, Eigen::Vector3f(1.0f, 0.0f, 0.0f));
-  EXPECT_EQ(1.0f, colors[size - 1]);
+  frame.setColor(799, 599, Eigen::Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
+  REQUIRE(1.0f == colors[size - 1]);
 
-  frame.setColor(400, 300, Eigen::Vector3f(0.0f, 1.0f, 0.0f));
+  frame.setColor(400, 300, Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f));
   const auto idx = (400 + 300 * width) * 4;
-  EXPECT_EQ(1.0f, colors[idx + 1]);
-  EXPECT_EQ(1.0f, colors[idx + 3]);
-}
-
-int main(int ac, char *av[]) {
-  testing::InitGoogleTest(&ac, av);
-  return RUN_ALL_TESTS();
+  REQUIRE(1.0f == colors[idx + 1]);
+  REQUIRE(1.0f == colors[idx + 3]);
 }

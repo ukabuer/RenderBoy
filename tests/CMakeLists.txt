@@ -1,12 +1,22 @@
-find_package(GTest MODULE REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 
 add_executable(tests)
 target_sources(tests
-  PRIVATE
+    PRIVATE
     main.cpp
-    ${PROJECT_SOURCE_DIR}/src/Camera.cpp
+    )
+target_include_directories(
+    tests
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/third_party/Catch2/single_include/
 )
-target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/src)
-target_link_libraries(tests PRIVATE GTest::GTest GTest::Main)
+target_link_libraries(
+    tests
+    PRIVATE
+    RenderBoyCore
+    Eigen3::Eigen
+)
 
+enable_testing()
 add_test(AllTests tests)

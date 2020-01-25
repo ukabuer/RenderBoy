@@ -1,13 +1,21 @@
 find_package(Eigen3 CONFIG REQUIRED)
 
-add_library(
-    RenderBoyCore
-    STATIC
+list(
+    APPEND
+    RenderBoyCore_Src
     Geometry.cpp
     Camera.cpp
     Controls/Trackball.cpp
-    Renderer/RasterizationRenderer.cpp
-    Model.cpp
+    Renderer/Renderer.cpp
+    Renderer/CPURasterizer/RasterizationRenderer.cpp
+    Model/GLTFModelLoader.cpp
+    Model/ModelLoader.cpp
+)
+
+add_library(
+    RenderBoyCore
+    STATIC
+    ${RenderBoyCore_Src}
 )
 target_link_libraries(
     RenderBoyCore

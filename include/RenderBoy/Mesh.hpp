@@ -1,5 +1,7 @@
 #pragma once
-#include "RenderBoy/Geometry.hpp"
+#include <RenderBoy/Geometry.hpp>
+
+namespace RB {
 
 struct Mesh {
   std::vector<Geometry> geometries;
@@ -9,3 +11,5 @@ struct Mesh {
     model_matrix = matrix;
   }
 };
+
+} // namespace RB

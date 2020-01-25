@@ -1,8 +1,10 @@
 #pragma once
-#include <RenderBoy/Renderer/Rasterizer.hpp>
 #include <RenderBoy/utils.hpp>
+#include <Renderer/CPURasterizer/Rasterizer.hpp>
 #include <tuple>
 #include <utility>
+
+namespace RB {
 
 template <typename T> struct is_std_array : std::false_type {};
 
@@ -256,3 +258,5 @@ void Rasterizer<Uniforms, Attributes, Varyings>::drawElements(
                     this->traverse_triangle(v0_index, v1_index, v2_index);
                   });
 }
+
+} // namespace RB

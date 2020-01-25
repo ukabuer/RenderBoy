@@ -2,6 +2,8 @@
 #include <Eigen/Core>
 #include <cstdint>
 
+namespace RB {
+
 class Camera {
 public:
   enum class Projection : uint32_t {
@@ -59,3 +61,5 @@ private:
 
   Eigen::Matrix4f view_matrix;
 };
+
+} // namespace RB

@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+namespace RB {
+
 class Frame {
 public:
   Frame() = default;
@@ -68,3 +70,5 @@ private:
   std::vector<float> colors;
   std::vector<float> z;
 };
+
+} // namespace RB

@@ -1,13 +1,14 @@
-#include "RenderBoy/Model.hpp"
-#include "Material/DepthMaterial.hpp"
-#include "Material/PhongMaterial.hpp"
-#include <iostream>
+#pragma once
 #define STB_IMAGE_IMPLEMENTATION
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "Model/GLTFModelLoader.hpp"
+#include "Material/Texture.hpp"
 #include <Eigen/Geometry>
+#include <RenderBoy/Camera.hpp>
 #include <cassert>
 #include <exception>
+#include <iostream>
 #include <string>
 #include <tiny_gltf.h>
 #include <utility>
@@ -15,6 +16,8 @@
 
 using namespace std;
 using namespace Eigen;
+
+namespace RB {
 
 static auto LoadTexture(const string &path, const string &baseDir,
                         vector<shared_ptr<Texture>> &textures)
@@ -261,23 +264,25 @@ static void process_node(const tinygltf::Node &gltf_node,
   }
 }
 
-auto Model::loadGLTF(const string &filepath) -> const Model & {
+Model GLTFModelLoader::load() {
   tinygltf::TinyGLTF loader;
   tinygltf::Model gltf;
 
+  Model model{};
+
   string err, warn;
 
-  auto ext_idx = filepath.find_last_of('.');
+  auto ext_idx = path.find_last_of('.');
   if (ext_idx == string::npos) {
     throw runtime_error("should have extension");
   }
 
-  auto ext = filepath.substr(ext_idx);
+  auto ext = path.substr(ext_idx);
   auto res = false;
   if (ext == ".gltf") {
-    res = loader.LoadASCIIFromFile(&gltf, &err, &warn, filepath);
+    res = loader.LoadASCIIFromFile(&gltf, &err, &warn, path);
   } else if (ext == ".glb") {
-    res = loader.LoadBinaryFromFile(&gltf, &err, &warn, filepath);
+    res = loader.LoadBinaryFromFile(&gltf, &err, &warn, path);
   } else {
     throw runtime_error("unknown file extension");
   }
@@ -315,8 +320,10 @@ auto Model::loadGLTF(const string &filepath) -> const Model & {
     }
     auto &gltf_node = gltf.nodes[static_cast<uint32_t>(idx)];
 
-    process_node(gltf_node, gltf, meshes);
+    process_node(gltf_node, gltf, model.meshes);
   }
 
-  return *this;
+  return model;
 }
+
+} // namespace RB

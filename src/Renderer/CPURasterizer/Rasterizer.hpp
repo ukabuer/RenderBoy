@@ -1,9 +1,12 @@
 #pragma once
-#include "Eigen/Core"
+#include <Eigen/Core>
+#include <RenderBoy/Frame.hpp>
 #include <array>
 #include <functional>
 #include <utility>
 #include <vector>
+
+namespace RB {
 
 struct AttributeObject {
   uint8_t components = 1;
@@ -47,10 +50,10 @@ public:
     this->fragment_shader = move(shader);
   }
 
-  void set_frame(Frame *frame) {
-    this->frame = frame;
-    this->screen[0] = frame->getWidth();
-    this->screen[1] = frame->getHeight();
+  void set_frame(Frame *_frame) {
+    this->frame = _frame;
+    this->screen[0] = _frame->getWidth();
+    this->screen[1] = _frame->getHeight();
   }
 
 private:
@@ -66,3 +69,5 @@ private:
   std::vector<float> depth;
   std::vector<std::array<int, 2>> screen_coords;
 };
+
+} // namespace RB
