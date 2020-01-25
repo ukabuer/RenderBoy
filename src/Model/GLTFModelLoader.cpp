@@ -1,4 +1,3 @@
-#pragma once
 #define STB_IMAGE_IMPLEMENTATION
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -218,7 +217,8 @@ static auto process_camera(const tinygltf::Camera &gltf_camera)
 }
 
 static void process_node(const tinygltf::Node &gltf_node,
-                         const tinygltf::Model &model, vector<Mesh> &meshes) {
+                         const tinygltf::Model &model, vector<Mesh> &meshes,
+                         const Matrix4f *parent_transform) {
   Affine3f transform = Affine3f::Identity();
 
   if (!gltf_node.matrix.empty()) {
@@ -244,14 +244,21 @@ static void process_node(const tinygltf::Node &gltf_node,
       translation.vector()[i] = gltf_node.translation[i];
     }
 
-    //    transform = translation * rotation * scale;
+    transform.prescale(scale);
+    transform.prerotate(rotation);
+    transform.pretranslate(translation.vector());
+  }
+
+  Matrix4f matrix = transform.matrix();
+  if (parent_transform != nullptr) {
+    matrix = (*parent_transform) * matrix;
   }
 
   if (gltf_node.mesh >= 0) {
     auto &gltf_mesh = model.meshes[static_cast<uint32_t>(gltf_node.mesh)];
 
     auto mesh = process_mesh(gltf_mesh, model);
-    mesh.set_model_matrix(transform.matrix());
+    mesh.set_model_matrix(matrix);
     meshes.emplace_back(move(mesh));
   }
 
@@ -260,7 +267,7 @@ static void process_node(const tinygltf::Node &gltf_node,
       continue;
     }
     auto &node = model.nodes[static_cast<uint32_t>(child)];
-    process_node(node, model, meshes);
+    process_node(node, model, meshes, &matrix);
   }
 }
 
@@ -320,7 +327,7 @@ Model GLTFModelLoader::load() {
     }
     auto &gltf_node = gltf.nodes[static_cast<uint32_t>(idx)];
 
-    process_node(gltf_node, gltf, model.meshes);
+    process_node(gltf_node, gltf, model.meshes, nullptr);
   }
 
   return model;
