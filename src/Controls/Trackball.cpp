@@ -7,78 +7,72 @@ using namespace Eigen;
 
 namespace RB {
 
-static auto clamp(float f, float min, float max) noexcept -> float {
-  return f < min ? min : (f > max ? max : f);
+void TrackballControl::update() {
+  this->eye = this->position - this->target;
+
+  this->zoom();
+  this->pan();
+  this->rotate();
+
+  this->position = this->target + this->eye;
 }
 
-static auto calculateZoom(const Vector3f &from, const Vector3f &to,
-                          float zoomDelta) {
-  const auto factor = 0.1f;
-  const Vector3f direction = to - from;
-  return zoomDelta * factor * direction;
+void TrackballControl::zoom() {
+  auto factor = 1.0f + this->zoom_delta;
+
+  if (factor != 1.0f && factor > 0.0f) {
+    this->eye *= factor;
+  }
+
+  this->zoom_delta = 0.0f;
 }
 
-static auto calculateRotate(const Vector3f &from,
-                          const Vector3f &to,
-                          const int deltaX,
-                          const int deltaY)
-    -> Vector3f {
-  const auto factor = 0.02f;
-  const auto EPSILON = 1e-5f;
+void TrackballControl::pan() {
+  Vector2f moved = this->pan_end - this->pan_start;
 
-  const Vector3f direction = to - from;
-  float radius = direction.norm();
-  auto theta = atan2(direction[0], direction[2]); /* azimuth */
-  auto phi = acos(direction[1] / radius);         /* polar */
+  if (moved.norm() <= 0.001f) {
+    return;
+  }
 
-  theta -= static_cast<float>(deltaX) * factor;
-  phi -= static_cast<float>(deltaY) * factor;
-  phi = clamp(phi, EPSILON, PI - EPSILON);
+  float factor = this->eye.norm() * this->pan_speed;
+  moved = moved * factor;
 
-  return {radius * sin(phi) * sin(theta), radius * cos(phi), radius * sin(phi) * cos(theta)};
+  Vector3f panned = this->eye.cross(this->up);
+  panned = panned.normalized() * moved[0];
+  panned += this->up.normalized() * moved[1];
+
+  this->position += panned;
+  this->target += panned;
+
+  this->pan_start = this->pan_end;
 }
 
-static auto calculatePan(const Vector3f &from,
-                         const Vector3f &to,
-                         const Vector3f& up,
-                         const int deltaX,
-                         const int deltaY) -> Vector3f {
-  const Vector3f forward = (to - from).normalized();
-  const Vector3f left = up.cross(forward);
+void TrackballControl::rotate() {
+  Vector3f moved = {this->move_current[0] - this->move_prev[0],
+                    this->move_current[1] - this->move_prev[1], 0.0f};
+  float angle = moved.norm();
 
-  const auto distance = forward.norm();
-  const auto factor = distance * 0.01f;
+  if (angle <= 0.001f) {
+    this->move_prev = this->move_current;
+    return;
+  }
 
-  const Vector3f offsetX = (static_cast<float>(deltaX) * factor) * left;
-  const Vector3f offsetY = (static_cast<float>(deltaY) * factor) * up;
-  return offsetX + offsetY;
-}
+  Vector3f eye_dir = this->eye.normalized();
+  Vector3f up_dir = this->up.normalized();
+  Vector3f sideway_dir = up_dir.cross(eye_dir).normalized();
 
-void TrackballControl::update(int x, int y) {
-  auto deltaX = x - lastX;
-  auto deltaY = y - lastY;
+  sideway_dir *= moved[0];
+  up_dir *= moved[1];
+  Vector3f move_dir = up_dir + sideway_dir;
+  Vector3f axis = move_dir.cross(this->eye).normalized();
 
-  //  if (isZoom) {
-  //    const auto offset = calculateZoom(camera.getPosition(),
-  //    camera.getTarget(), zoomDelta); camera.setPosition(camera.getPosition()
-  //    + offset);
-  //  }
-  //
-  //  if (isOrbit) {
-  //    const auto offset = calculateRotate(camera.getTarget(),
-  //    camera.getPosition(), deltaX, deltaY);
-  //    camera.setPosition(camera.getTarget() + offset);
-  //  }
-  //
-  //  if (isPan) {
-  //    const auto pan = calculatePan(camera.getPosition(), camera.getTarget(),
-  //    camera.getUp(), deltaX, deltaY); camera.setTarget(camera.getTarget() +
-  //    pan);
-  //  }
+  angle *= rotate_speed;
+  Quaternionf quaternion(AngleAxisf(angle, axis));
 
-  lastX = x;
-  lastY = y;
-  zoomDelta = 0.f;
+  this->eye = quaternion * this->eye;
+  this->up = quaternion * this->up;
+
+  this->move_prev = this->move_current;
 }
 
 } // namespace RB

@@ -43,6 +43,8 @@ static GLuint create_shader(GLenum type, const char *shader_text);
 static GLuint create_program(GLuint vertex_shader, GLuint fragment_shader);
 static GLuint create_texture(int width, int height, const unsigned char *data);
 
+TrackballControl control(800, 600);
+
 int main(int argc, const char **argv) {
   if (argc < 2) {
     cerr << "Usage: " << argv[0] << " /path/to/config/file" << endl;
@@ -148,8 +150,7 @@ int main(int argc, const char **argv) {
   camera.setProjection(45.0f,
                        static_cast<float>(width) / static_cast<float>(height),
                        0.01f, 1000.0f);
-  camera.lookAt(Vector3f{0.0f, 0.0f, 100.0f}, Vector3f{0.0f, 0.0f, -1.0f},
-                Vector3f{0.0f, 1.0f, 0.0f});
+  control.position = {1.0f, 2.0f, 5.0f};
 
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -167,6 +168,9 @@ int main(int argc, const char **argv) {
     cout << "\r" << to_string(delta.count()) + " ms";
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    control.update();
+    camera.lookAt(control.position, control.target, control.up);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -188,16 +192,30 @@ void key_callback(GLFWwindow *window, int key, int scan_code, int action,
   }
 }
 
-void cursor_pos_callback(GLFWwindow *window, double, double) {}
+void cursor_pos_callback(GLFWwindow *window, double x, double y) {
+  control.onMouseMove(static_cast<int>(x), static_cast<int>(y));
+}
 
 void scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
   if (y_offset == 0.0) {
     return;
   }
+  control.onMouseWheelScroll(static_cast<float>(y_offset));
 }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action,
-                           int mods) {}
+                           int mods) {
+  double x, y;
+  glfwGetCursorPos(window, &x, &y);
+
+  if (action == GLFW_PRESS) {
+    control.onMouseDown(GLFW_MOUSE_BUTTON_LEFT == button, static_cast<int>(x),
+                        static_cast<int>(y));
+  } else if (action == GLFW_RELEASE) {
+    control.onMouseUp(GLFW_MOUSE_BUTTON_LEFT == button, static_cast<int>(x),
+                      static_cast<int>(y));
+  }
+}
 
 GLuint create_shader(GLenum type, const char *shader_text) {
   auto shader = glCreateShader(type);
