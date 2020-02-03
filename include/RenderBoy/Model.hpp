@@ -7,6 +7,7 @@ namespace RB {
 
 struct Model {
   std::vector<Mesh> meshes;
+  BoundingBox box;
 };
 
 } // namespace RB

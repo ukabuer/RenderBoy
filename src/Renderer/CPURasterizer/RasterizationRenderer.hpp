@@ -1,6 +1,6 @@
 #pragma once
 #include "Eigen/Core"
-#include "Rasterizer.inl"
+#include "Rasterizer.hpp"
 #include "Renderer/IRendererImpl.hpp"
 #include <functional>
 #include <vector>

@@ -116,12 +116,12 @@ static auto process_primitive(const tinygltf::Primitive &primitive,
     auto &buffer_view =
         model.bufferViews[static_cast<uint32_t>(accessor.bufferView)];
     auto &buffer = model.buffers[static_cast<uint32_t>(buffer_view.buffer)];
-    Vector3f min_value = {static_cast<float>(accessor.minValues[0]),
-                          static_cast<float>(accessor.minValues[1]),
-                          static_cast<float>(accessor.minValues[2])};
-    Vector3f max_value = {static_cast<float>(accessor.maxValues[0]),
-                          static_cast<float>(accessor.maxValues[1]),
-                          static_cast<float>(accessor.maxValues[2])};
+    geometry.box.min = {static_cast<float>(accessor.minValues[0]),
+                        static_cast<float>(accessor.minValues[1]),
+                        static_cast<float>(accessor.minValues[2])};
+    geometry.box.max = {static_cast<float>(accessor.maxValues[0]),
+                        static_cast<float>(accessor.maxValues[1]),
+                        static_cast<float>(accessor.maxValues[2])};
 
     geometry.vertex_count = static_cast<uint32_t>(accessor.count);
     positions_buffer = reinterpret_cast<const float *>(
@@ -181,8 +181,14 @@ static auto process_mesh(const tinygltf::Mesh &gltf_mesh,
       continue;
     }
     auto geometry = process_primitive(gltf_primitive, model);
-    mesh.geometries.emplace_back(move(geometry));
     // TODO: handle material
+    if (geometry.box.min[0] < mesh.box.min[0]) {
+      mesh.box.min = geometry.box.min;
+    }
+    if (geometry.box.max[0] > mesh.box.max[0]) {
+      mesh.box.max = geometry.box.max;
+    }
+    mesh.geometries.emplace_back(move(geometry));
   }
 
   return mesh;
@@ -328,6 +334,15 @@ Model GLTFModelLoader::load() {
     auto &gltf_node = gltf.nodes[static_cast<uint32_t>(idx)];
 
     process_node(gltf_node, gltf, model.meshes, nullptr);
+  }
+
+  for (auto &mesh : model.meshes) {
+    if (mesh.box.min[0] < model.box.min[0]) {
+      model.box.min = mesh.box.min;
+    }
+    if (mesh.box.max[0] > model.box.max[0]) {
+      model.box.max = mesh.box.max;
+    }
   }
 
   return model;

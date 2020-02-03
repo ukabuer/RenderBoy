@@ -1,6 +1,5 @@
 #pragma once
 #include <RenderBoy/utils.hpp>
-#include <Renderer/CPURasterizer/Rasterizer.hpp>
 #include <tuple>
 #include <utility>
 

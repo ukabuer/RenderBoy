@@ -71,3 +71,5 @@ private:
 };
 
 } // namespace RB
+
+#include "Rasterizer.inl"
