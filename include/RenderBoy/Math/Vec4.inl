@@ -44,7 +44,7 @@ template <typename T> auto Vec4<T>::operator*=(const Vec4 &rhs) -> Vec4 & {
 }
 
 template <typename T> auto Vec4<T>::operator*(T rhs) const -> Vec4 {
-  return {x * rhs, y * rhs, z * rhs.z, w * rhs.w};
+  return {x * rhs, y * rhs, z * rhs, w * rhs};
 }
 
 template <typename T> auto Vec4<T>::operator*=(T rhs) -> Vec4 & {
@@ -105,7 +105,7 @@ template <typename T> auto Vec4<T>::operator[](uint32_t index) -> T & {
 template <typename T> auto Vec4<T>::normalize() -> Vec4 & {
   auto norm = this->norm();
   if (norm == 0)
-    return;
+    return *this;
 
   (*this) /= norm;
   return *this;

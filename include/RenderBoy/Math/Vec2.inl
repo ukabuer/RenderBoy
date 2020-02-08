@@ -93,7 +93,7 @@ template <typename T> auto Vec2<T>::operator[](uint32_t index) -> T & {
 template <typename T> auto Vec2<T>::normalize() -> Vec2 & {
   auto norm = this->norm();
   if (norm == 0)
-    return;
+    return *this;
 
   (*this) /= norm;
   return *this;

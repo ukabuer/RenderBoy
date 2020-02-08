@@ -41,7 +41,7 @@ template <typename T> auto Vec3<T>::operator*=(const Vec3 &rhs) -> Vec3 & {
 }
 
 template <typename T> auto Vec3<T>::operator*(T rhs) const -> Vec3 {
-  return {x * rhs, y * rhs, z * rhs.z};
+  return {x * rhs, y * rhs, z * rhs};
 }
 
 template <typename T> auto Vec3<T>::operator*=(T rhs) -> Vec3 & {
@@ -99,7 +99,7 @@ template <typename T> auto Vec3<T>::operator[](uint32_t index) -> T & {
 template <typename T> auto Vec3<T>::normalize() -> Vec3 & {
   auto norm = this->norm();
   if (norm == 0)
-    return;
+    return *this;
 
   (*this) /= norm;
   return *this;
