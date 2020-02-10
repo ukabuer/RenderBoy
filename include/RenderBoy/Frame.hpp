@@ -48,7 +48,7 @@ public:
     colors[idx] = color[0];
     colors[idx + 1] = color[1];
     colors[idx + 2] = color[2];
-    colors[idx + 3] = 1.0f;
+    colors[idx + 3] = color[3];
   }
 
   void setColor(uint32_t x, uint32_t y, const Eigen::Vector4f &color) {

@@ -151,19 +151,14 @@ int main(int argc, const char **argv) {
                        static_cast<float>(width) / static_cast<float>(height),
                        0.01f, 1000.0f);
   Vector3f center = (model.box.max + model.box.min) / 2.0f;
-  control.position = center;
-  control.target = center;
-  control.position[2] = model.box.max[2] + 5.0f;
-#ifdef EIGEN_VECTORIZE_SSE2
-  cout << "sse2" << endl;
-#endif
-#ifdef EIGEN_VECTORIZE_AVX
-  cout << "avx" << endl;
-#endif
+  control.position = {0.0f, 0.0f, 10.0f};
+  control.target = {0.0f, 0.0f, 0.0f};
+  //  control.position[2] = model.box.max[2] + 5.0f;
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
     auto start = chrono::steady_clock::now();
 
+    camera.lookAt(control.position, control.target, control.up);
     auto &frame = renderer.render(model, camera);
     auto &colors = frame.getColors();
 
@@ -178,7 +173,6 @@ int main(int argc, const char **argv) {
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     control.update();
-    camera.lookAt(control.position, control.target, control.up);
 
     glfwSwapBuffers(window);
     glfwPollEvents();

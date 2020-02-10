@@ -23,6 +23,6 @@ ModelLoader::ModelLoader(const string &path) {
   impl->set_path(path);
 }
 
-auto ModelLoader::load() -> Model { return impl->load(); }
+auto ModelLoader::load() -> Model & { return impl->load(); }
 
 } // namespace RB

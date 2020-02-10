@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Core>
+#include <RenderBoy/Material.hpp>
 #include <RenderBoy/Primitive.hpp>
 #include <cfloat>
 #include <functional>
@@ -21,7 +22,7 @@ struct Geometry {
   uint32_t vertex_count = 0;
   uint32_t index_count = 0;
   BoundingBox box;
-  // TODO: material
+  Material material;
 };
 
 } // namespace RB

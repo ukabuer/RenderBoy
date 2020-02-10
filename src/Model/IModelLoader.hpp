@@ -19,7 +19,7 @@ public:
     }
   }
 
-  virtual auto load() -> Model = 0;
+  virtual auto load() -> Model & = 0;
 
 protected:
   std::string dir;

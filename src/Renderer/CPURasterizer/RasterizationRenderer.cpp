@@ -1,7 +1,7 @@
 #include "RasterizationRenderer.hpp"
-#include "Material/DepthMaterial.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <RenderBoy/Material.hpp>
 #include <array>
 #include <functional>
 
@@ -15,19 +15,19 @@ const Frame &RasterizationRenderer::render(const Model &model,
   struct Uniforms {
     Matrix4f matrix;
     Matrix4f model;
-    DepthMaterial material;
+    Material material;
+    Texture shadow_map;
   } uniforms = {};
-
   using Attributes = tuple<const float *, const float *, const float *>;
   using Varyings =
-      tuple<array<float, 3>, array<float, 3>, array<float, 3>, float>;
+      tuple<array<float, 3>, array<float, 3>, array<float, 2>, float>;
+
+  Rasterizer<Uniforms, Attributes, Varyings> rasterizer;
+  rasterizer.set_frame(&frame);
 
   frame.clear(background);
 
-  const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
-  const Matrix4f &projectionMatrix = camera.getCullingProjectionMatrix();
-  uniforms.matrix = projectionMatrix * viewMatrix;
-
+  // render pass
   auto vertex_shader = [&uniforms](const Attributes &attributes,
                                    Varyings &varyings, Vector4f &position) {
     const auto a_position = get<0>(attributes);
@@ -50,23 +50,30 @@ const Frame &RasterizationRenderer::render(const Model &model,
 
   auto fragment_shader = [&uniforms](const Varyings &varyings,
                                      Vector4f &color) {
-    auto &v_depth = get<3>(varyings);
     auto &v_normal = get<1>(varyings);
+    auto &v_uv = get<2>(varyings);
 
-    color = Vector4f(v_normal[0] + 1.0f, v_normal[1] + 1.0f, v_normal[2] + 1.0f,
-                     2.0f);
-    color /= 2.0f;
-    //    color = Vector4f(1.0f, 1.0f, 0.0f, 1.0f);
+    auto &material = uniforms.material;
+    if (material.base_color_texture != nullptr) {
+      color = material.base_color_texture->sample(v_uv[0], v_uv[1]);
+    } else {
+      color = Vector4f(material.base_color[0], material.base_color[1],
+                       material.base_color[2], material.base_color[3]);
+    }
   };
 
-  Rasterizer<Uniforms, Attributes, Varyings> rasterizer;
-  rasterizer.set_frame(&frame);
+  frame.clear(background);
   rasterizer.set_vertex_shader(move(vertex_shader));
   rasterizer.set_fragment_shader(move(fragment_shader));
+
+  const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
+  const Matrix4f &projectionMatrix = camera.getCullingProjectionMatrix();
+  uniforms.matrix = projectionMatrix * viewMatrix;
 
   for (const auto &mesh : model.meshes) {
     uniforms.model = mesh.model_matrix;
     for (const auto &geometry : mesh.geometries) {
+      uniforms.material = geometry.material;
       rasterizer.vertex_attributes(
           Attributes{reinterpret_cast<const float *>(geometry.buffers.data()),
                      reinterpret_cast<const float *>(geometry.buffers.data()),
@@ -74,7 +81,7 @@ const Frame &RasterizationRenderer::render(const Model &model,
 
       rasterizer.vertex_attributes_pointer(0, 3, 5, 0); // position
       rasterizer.vertex_attributes_pointer(1, 3, 5, 3); // normal
-      rasterizer.vertex_attributes_pointer(2, 2, 6, 4); // uv
+      rasterizer.vertex_attributes_pointer(2, 2, 6, 6); // uv
       if (geometry.indices.empty()) {
         rasterizer.drawArray(geometry.vertex_count);
       } else {

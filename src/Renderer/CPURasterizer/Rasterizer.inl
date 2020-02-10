@@ -237,7 +237,7 @@ void Rasterizer<Uniforms, Attributes, Varyings>::drawElements(
                       vertex_idx);
 
     Eigen::Vector4f value{};
-    vertex_shader(attributes, all_varyings[i], value);
+    vertex_shader(attributes, all_varyings[vertex_idx], value);
 
     depth[vertex_idx] = value[2] / value[3];
     homo[vertex_idx] = value[3];

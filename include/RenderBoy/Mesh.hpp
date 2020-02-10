@@ -1,5 +1,6 @@
 #pragma once
 #include <RenderBoy/Geometry.hpp>
+#include <RenderBoy/Material.hpp>
 
 namespace RB {
 

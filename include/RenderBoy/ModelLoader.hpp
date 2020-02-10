@@ -19,7 +19,7 @@ public:
 
   ~ModelLoader();
 
-  auto load() -> Model;
+  auto load() -> Model &;
 
 private:
   std::shared_ptr<IModelLoader> impl;
