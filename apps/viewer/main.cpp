@@ -142,6 +142,7 @@ int main(int argc, const char **argv) {
 
   ModelLoader loader((string(argv[1])));
   auto model = loader.load();
+  auto extends = loader.get_extends();
 
   Renderer renderer(Renderer::Type::CPURasterizer);
   renderer.set_frame(width, height);
@@ -150,10 +151,11 @@ int main(int argc, const char **argv) {
   camera.setProjection(45.0f,
                        static_cast<float>(width) / static_cast<float>(height),
                        0.01f, 1000.0f);
-  Vector3f center = (model.box.max + model.box.min) / 2.0f;
-  control.position = {0.0f, 0.0f, 10.0f};
-  control.target = {0.0f, 0.0f, 0.0f};
-  //  control.position[2] = model.box.max[2] + 5.0f;
+  control.target = (extends.min + extends.max) / 2.0f;
+  control.position = control.target;
+  auto radius = (extends.max - extends.min).norm();
+  control.position[2] += radius;
+
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
     auto start = chrono::steady_clock::now();

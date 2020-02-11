@@ -377,5 +377,31 @@ Model &GLTFModelLoader::load() {
 
   return model;
 }
+auto GLTFModelLoader::get_extends() const -> BoundingBox {
+  BoundingBox box{};
+  for (auto &mesh : model.meshes) {
+    for (auto &geometry : mesh.geometries) {
+      Vector4f min =
+          mesh.model_matrix * Vector4f(geometry.box.min[0], geometry.box.min[1],
+                                       geometry.box.min[2], 1.0f);
+      min /= min[3];
+      Vector4f max =
+          mesh.model_matrix * Vector4f(geometry.box.max[0], geometry.box.max[1],
+                                       geometry.box.max[2], 1.0f);
+      max /= max[3];
+      Vector4f center = (min + max) / 2.0f;
+      Vector4f distance = max - center;
+      distance[3] = 0.0f;
+      float radius = distance.norm();
+      min = center - Vector4f(radius, radius, radius, radius);
+      max = center + Vector4f(radius, radius, radius, radius);
+      for (size_t i = 0; i < 3; i++) {
+        box.min[i] = std::min(box.min[i], min[i]);
+        box.max[i] = std::max(box.max[i], max[i]);
+      }
+    }
+  }
+  return box;
+}
 
 } // namespace RB

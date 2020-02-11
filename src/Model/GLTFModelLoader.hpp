@@ -9,6 +9,8 @@ class GLTFModelLoader final : public IModelLoader {
 public:
   auto load() -> Model & override;
 
+  auto get_extends() const -> BoundingBox override;
+
 private:
   tinygltf::Model gltf_model;
   std::map<uint32_t, Texture> textures;

@@ -25,4 +25,8 @@ ModelLoader::ModelLoader(const string &path) {
 
 auto ModelLoader::load() -> Model & { return impl->load(); }
 
+auto ModelLoader::get_extends() const -> BoundingBox {
+  return impl->get_extends();
+};
+
 } // namespace RB

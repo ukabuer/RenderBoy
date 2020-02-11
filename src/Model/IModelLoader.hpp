@@ -21,6 +21,8 @@ public:
 
   virtual auto load() -> Model & = 0;
 
+  virtual auto get_extends() const -> BoundingBox = 0;
+
 protected:
   std::string dir;
   std::string path;

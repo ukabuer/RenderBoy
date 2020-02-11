@@ -21,6 +21,8 @@ public:
 
   auto load() -> Model &;
 
+  auto get_extends() const -> BoundingBox;
+
 private:
   std::shared_ptr<IModelLoader> impl;
 };
