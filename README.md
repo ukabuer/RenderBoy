@@ -1,10 +1,12 @@
 # RenderBoy
-(To be) A scalable CPU rendering engine.
+(To be) A scalable CPU rendering engine?
+
+![1](./screenshots/1.png)
+![2](./screenshots/2.png)
+![3](./screenshots/3.png)
 
 ## TODO
-- [ ] light
-- [ ] material system
-- [ ] parallelization
-- [ ] path tracing
-- [ ] PBR
-- [ ] MPI based distributed rendering
+- [x] Rasterization
+- [ ] PBR rendering sample
+- [ ] path tracing?
+- [ ] MPI?
