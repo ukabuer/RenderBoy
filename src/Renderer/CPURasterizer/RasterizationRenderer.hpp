@@ -12,7 +12,7 @@ public:
   auto render(const Model &model, const Camera &camera)
       -> const Frame & override;
 
-  void set_frame(uint32_t width, uint32_t height) {
+  void set_frame(uint32_t width, uint32_t height) override {
     frame.resize(width, height);
   }
 };

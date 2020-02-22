@@ -16,6 +16,7 @@ Renderer::Renderer(Renderer::Type type) {
 const Frame &Renderer::render(const Model &model, const Camera &camera) {
   return impl->render(model, camera);
 }
+
 void Renderer::set_frame(uint32_t width, uint32_t height) {
   return impl->set_frame(width, height);
 }

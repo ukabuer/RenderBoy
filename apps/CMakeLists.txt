@@ -22,3 +22,25 @@ target_compile_features(
     PRIVATE
     cxx_std_14
 )
+
+add_executable(
+    RenderBoyOpenGL
+    gl/main.cpp
+)
+target_link_libraries(
+    RenderBoyOpenGL
+    PRIVATE
+    RenderBoyCore
+    glad::glad
+    glfw
+)
+target_include_directories(
+    RenderBoyOpenGL
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/gl
+)
+target_compile_features(
+    RenderBoyOpenGL
+    PRIVATE
+    cxx_std_14
+)

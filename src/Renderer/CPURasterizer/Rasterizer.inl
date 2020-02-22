@@ -104,6 +104,9 @@ void Rasterizer<Uniforms, Attributes, Varyings>::drawArray(uint32_t count) {
   screen_coords.resize(count);
   all_varyings.resize(count);
 
+  auto &vao = vertex_attribute_arrays[current_vao];
+  auto &all_attributes = vao.attributes;
+  auto &attributes_pointers = vao.attributes_pointers;
   for (size_t i = 0; i < count; i++) {
     Attributes attributes;
     extract_attribute(attributes, all_attributes, attributes_pointers, i);
@@ -219,7 +222,7 @@ void Rasterizer<Uniforms, Attributes, Varyings>::traverse_triangle(
 
 template <typename Uniforms, typename Attributes, typename Varyings>
 void Rasterizer<Uniforms, Attributes, Varyings>::drawElements(
-    const std::vector<uint32_t> &indices, uint32_t index_count) {
+    uint32_t index_count) {
   const uint8_t components = 3; // only support triangle now
 
   if (frame == nullptr)
@@ -230,6 +233,10 @@ void Rasterizer<Uniforms, Attributes, Varyings>::drawElements(
   screen_coords.resize(index_count);
   all_varyings.resize(index_count);
 
+  auto &vao = vertex_attribute_arrays[current_vao];
+  auto &all_attributes = vao.attributes;
+  auto &attributes_pointers = vao.attributes_pointers;
+  auto indices = vao.indices;
   for (size_t i = 0; i < index_count; i++) {
     auto vertex_idx = indices[i];
     Attributes attributes;

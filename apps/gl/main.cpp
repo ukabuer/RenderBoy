@@ -7,31 +7,13 @@
 #include <iostream>
 #include <vector>
 #include <RenderBoy/ModelLoader.hpp>
-#include <Eigen/Geometry>
+#include <RenderBoy/Renderer.hpp>
 #include <RenderBoy/Context.hpp>
+#include <Eigen/Geometry>
 
 using namespace std;
 using namespace Eigen;
 using namespace RB;
-
-constexpr const char *vertex_shader_text =
-    "#version 330 core\n"
-    "layout (location = 0) in vec2 a_pos;\n"
-    "layout (location = 1) in vec2 a_uv;\n"
-    "out vec2 v_uv;"
-    "void main() {\n"
-    "    v_uv = a_uv;\n"
-    "    gl_Position = vec4(a_pos, 0.0, 1.0);\n"
-    "}";
-
-constexpr const char *fragment_shader_text =
-    "#version 330 core\n"
-    "in vec2 v_uv;\n"
-    "uniform sampler2D u_texture;\n"
-    "out vec4 FragColor;\n"
-    "void main() {\n"
-    "    FragColor = texture(u_texture, v_uv);\n"
-    "}";
 
 static void error_callback(int error, const char *description);
 static void key_callback(GLFWwindow *window, int key, int scan_code, int action,
@@ -84,70 +66,9 @@ int main(int argc, const char **argv) {
     return 0;
   }
 
-  auto vertex_shader = create_shader(GL_VERTEX_SHADER, vertex_shader_text);
-  auto fragment_shader =
-      create_shader(GL_FRAGMENT_SHADER, fragment_shader_text);
-  auto program = create_program(vertex_shader, fragment_shader);
-
-  // clang-format off
-  vector<float> positions{
-      -1.0f, 1.0f,
-      1.0f, -1.0f,
-      -1.0f, -1.0f,
-      -1.0f, 1.0f,
-      1.0f, 1.0f,
-      1.0f,  -1.0f,
-  };
-  // clang-format on
-
-  GLuint position_buffer;
-  glGenBuffers(1, &position_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
-  glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(float),
-               reinterpret_cast<void *>(positions.data()), GL_STATIC_DRAW);
-
-  GLuint VAO;
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-  auto pos_location = glGetAttribLocation(program, "a_pos");
-  glEnableVertexAttribArray(pos_location);
-  glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-  // clang-format off
-  vector<float> tex_coords{
-      0.0f, 1.0f,
-      1.0f, 0.0f,
-      0.0f, 0.0f,
-      0.0f, 1.0f,
-      1.0f, 1.0f,
-      1.0f, 0.0f
-  };
-  // clang-format on
-
-  GLuint tex_coords_buffer;
-  glGenBuffers(1, &tex_coords_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, tex_coords_buffer);
-  glBufferData(GL_ARRAY_BUFFER, tex_coords.size() * sizeof(float),
-               reinterpret_cast<void *>(tex_coords.data()), GL_STATIC_DRAW);
-  auto tex_coord_location = glGetAttribLocation(program, "a_uv");
-  glEnableVertexAttribArray(tex_coord_location);
-  glVertexAttribPointer(tex_coord_location, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-  glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
-  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-  glUseProgram(program);
-
-  auto texture = create_texture(width, height, nullptr);
-  auto textureLocation = glGetUniformLocation(program, "u_texture");
-  glUniform1i(textureLocation, 0);
-
   ModelLoader loader((string(argv[1])));
   auto model = loader.load();
   auto extends = loader.get_extends();
-
-  Context context(Context::Type::SoftwareRasterizer);
-  context.view_port(width, height);
-  context.add(model);
 
   Camera camera{};
   camera.setProjection(45.0f,
@@ -158,27 +79,24 @@ int main(int argc, const char **argv) {
   auto radius = (extends.max - extends.min).norm();
   control.position[2] += radius;
 
+  Context context(Context::Type::OpenGL);
+  context.view_port(width, height);
+  context.add(model);
+
   while (!glfwWindowShouldClose(window)) {
-    glClear(GL_COLOR_BUFFER_BIT);
     auto start = chrono::steady_clock::now();
 
     camera.lookAt(control.position, control.target, control.up);
+
     const Matrix4f viewMatrix = camera.getViewMatrix().inverse();
     const Matrix4f &projectionMatrix = camera.getCullingProjectionMatrix();
     Matrix4f view_matrix = projectionMatrix * viewMatrix;
     context.set_view(view_matrix);
     context.draw();
-    auto &colors = context.get_colors();
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT,
-                 colors.data());
 
     auto delta = chrono::duration_cast<chrono::milliseconds>(
         chrono::steady_clock::now() - start);
     cout << "\r" << to_string(delta.count()) + " ms";
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     control.update();
 
