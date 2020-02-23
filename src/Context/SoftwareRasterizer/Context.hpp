@@ -1,5 +1,5 @@
 #include "Context/IContextImp.hpp"
-#include "Renderer/CPURasterizer/Rasterizer.hpp"
+#include "Context/SoftwareRasterizer/Rasterizer.hpp"
 
 namespace RB {
 

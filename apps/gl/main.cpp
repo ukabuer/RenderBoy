@@ -7,7 +7,6 @@
 #include <iostream>
 #include <vector>
 #include <RenderBoy/ModelLoader.hpp>
-#include <RenderBoy/Renderer.hpp>
 #include <RenderBoy/Context.hpp>
 #include <Eigen/Geometry>
 

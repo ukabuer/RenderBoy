@@ -9,8 +9,6 @@ list(
     Context/Context.cpp
     Context/SoftwareRasterizer/Context.cpp
     Context/OpenGL/Context.cpp
-    Renderer/Renderer.cpp
-    Renderer/CPURasterizer/RasterizationRenderer.cpp
     Model/GLTFModelLoader.cpp
     Model/ModelLoader.cpp
     ${PROJECT_SOURCE_DIR}/third_party/glad/src/glad.c

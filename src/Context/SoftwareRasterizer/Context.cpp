@@ -1,5 +1,5 @@
 #include "Context/SoftwareRasterizer/Context.hpp"
-#include "Renderer/CPURasterizer/Rasterizer.hpp"
+#include "Context/SoftwareRasterizer/Rasterizer.hpp"
 
 using namespace std;
 using namespace Eigen;
