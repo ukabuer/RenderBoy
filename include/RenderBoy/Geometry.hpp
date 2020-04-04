@@ -23,6 +23,9 @@ struct Geometry {
   uint32_t index_count = 0;
   BoundingBox box;
   Material material;
+
+  static Geometry Box(float width = 1.0f, float height = 1.0f,
+                      float depth = 1.0f);
 };
 
 } // namespace RB
