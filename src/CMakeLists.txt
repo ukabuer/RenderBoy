@@ -30,7 +30,7 @@ target_include_directories(
     ${PROJECT_SOURCE_DIR}/include
     PRIVATE
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/third_party/tinygltf
+    ${PROJECT_SOURCE_DIR}/third_party/
     ${PROJECT_SOURCE_DIR}/third_party/glad/include
 )
 target_compile_features(RenderBoyCore PRIVATE cxx_std_14)

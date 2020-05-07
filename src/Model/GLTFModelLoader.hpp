@@ -1,7 +1,7 @@
 #pragma once
 #include "Model/IModelLoader.hpp"
+#include "tinygltf/tiny_gltf.h"
 #include <RenderBoy/Material.hpp>
-#include <tiny_gltf.h>
 
 namespace RB {
 
